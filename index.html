@@ -323,11 +323,13 @@
     box.appendChild(testo('h1', 'titolo-form', 'Prenotazione confermata!'));
     box.appendChild(testo('div', 'codice', esito.codice_prenotazione || ''));
 
+    box.appendChild(testo('p', 'istruzioni', 'Per rivedere o modificare la tua prenotazione in futuro, apri di nuovo lo stesso link che hai usato per prenotare: da questo telefono si aprirà sempre la tua prenotazione.'));
+
     var tokenSalvato = esito.token_personale || localStorage.getItem('prenotazione_token_personale_' + urlToken);
     if (tokenSalvato) {
       var linkPersonale = location.origin + location.pathname + '?p=' + tokenSalvato;
       var linkBox = el('div', { class: 'box-link-personale' });
-      linkBox.appendChild(testo('p', null, 'Salva questo link per rivedere o modificare la tua prenotazione in futuro:'));
+      linkBox.appendChild(testo('p', null, 'Se in futuro usi un telefono diverso, salva invece questo link di riserva:'));
       var link = testo('div', null, linkPersonale);
       link.style.fontWeight = '600';
       linkBox.appendChild(link);
