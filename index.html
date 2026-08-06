@@ -91,8 +91,11 @@
   .intestazione { position: relative; padding: 8px 20px 6px; text-align: center; overflow: hidden; }
   .decorazione-palloncini { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-fiori { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-swirl { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
+  body.tema-intrattenimento_adulti .decorazione-palloncini { display: none; }
+  body.tema-intrattenimento_adulti .decorazione-swirl { display: block; }
   .decorazione-anelli { display: none; text-align: center; margin: 14px 0 0; opacity: 0.8; }
   body.tema-matrimonio_bimbi .decorazione-anelli { display: block; }
   .decorazione-anelli svg { width: 34px; height: 22px; }
@@ -406,6 +409,21 @@
         <use href="#fioreOro" x="906" y="16" width="36" height="36" />
         <use href="#fioreOro" x="854" y="58" width="28" height="28" />
       </svg>
+      <svg class="decorazione-swirl" viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g stroke="var(--oro)" fill="none" stroke-linecap="round">
+          <path d="M-40,20 C120,-20 200,60 340,10" stroke-width="2" opacity="0.55" />
+          <path d="M-40,60 C140,10 220,110 380,50" stroke-width="1.2" opacity="0.35" />
+          <path d="M-20,110 C160,70 260,160 420,110" stroke-width="1" opacity="0.22" />
+          <path d="M1040,20 C880,-20 800,60 660,10" stroke-width="2" opacity="0.55" />
+          <path d="M1040,60 C860,10 780,110 620,50" stroke-width="1.2" opacity="0.35" />
+          <path d="M1020,110 C840,70 740,160 580,110" stroke-width="1" opacity="0.22" />
+        </g>
+        <g fill="var(--oro)">
+          <circle cx="150" cy="18" r="2.4" /><circle cx="262" cy="55" r="1.8" /><circle cx="332" cy="14" r="2" />
+          <circle cx="850" cy="18" r="2.4" /><circle cx="738" cy="55" r="1.8" /><circle cx="668" cy="14" r="2" />
+          <path d="M500 10 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.85" />
+        </g>
+      </svg>
       <div class="logo-riquadro">
         <div class="logo-script">Greta<span class="cuore"> ♡</span></div>
         <span class="logo-sottotitolo">ANIMAZIONE E ALLESTIMENTI</span>
@@ -436,6 +454,9 @@
     nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L15.5 5.5l3 3L8 20l-4 1Z"/><path d="M13.5 7l3 3"/></svg>',
     busta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
     coronaCheck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M8.3 12.3l2.4 2.4 5-5"/><path d="M5.3 17.3c-1 .4-1.8 1-1.8 1M18.7 17.3c1 .4 1.8 1 1.8 1" stroke-width="1.3"/></svg>',
+    burstCheck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M9 12l2 2 4-4.5"/><path d="M12 1.5v2.2M12 20.3v2.2M2 12h2.2M19.8 12H22M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke-width="1.1"/></svg>',
+    cocktail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-8 9-8-9Z"/><path d="M12 13v7M8 20h8"/></svg>',
+    orario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M12 7.5V12l3 2"/></svg>',
   };
 
   var anelliSvg = '<svg viewBox="0 0 40 26" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="13" r="9.3" fill="none" stroke="var(--oro)" stroke-width="2.2"/><circle cx="26" cy="13" r="9.3" fill="none" stroke="var(--oro)" stroke-width="2.2"/></svg>';
@@ -607,6 +628,9 @@
   }
 
   function iconaCampo(domanda) {
+    if (domanda.chiave_destinazione === 'tipo_evento' && temaCorrente() === 'intrattenimento_adulti') {
+      return ICONE.cocktail;
+    }
     var nome = ICONA_PER_CHIAVE[domanda.chiave_destinazione];
     return nome ? ICONE[nome] : null;
   }
@@ -727,8 +751,11 @@
       ]));
     }
 
+    var tema = temaCorrente();
     var scheda = el('div', { class: 'scheda-grazie' });
-    var iconaGrazie = temaCorrente() === 'matrimonio_bimbi' ? ICONE.coronaCheck : ICONE.calendarioCheck;
+    var iconaGrazie = tema === 'matrimonio_bimbi' ? ICONE.coronaCheck
+      : tema === 'intrattenimento_adulti' ? ICONE.burstCheck
+      : ICONE.calendarioCheck;
     scheda.appendChild(el('div', { class: 'cerchio-icona-grande', html: iconaGrazie }));
     var grazie = el('p', { class: 'testo-grazie' });
     grazie.appendChild(el('b', {}, [document.createTextNode('Grazie! ')]));
@@ -736,7 +763,10 @@
     scheda.appendChild(grazie);
     scheda.appendChild(testo('div', 'cuore-divisore', '♥'));
     (riepilogo || []).forEach(function (r) {
-      scheda.appendChild(rigaIcona(ICONA_PER_CHIAVE[r.chiave] || 'festa', r.label, r.valore));
+      var nomeIcona = r.chiave === 'tipo_evento' && tema === 'intrattenimento_adulti'
+        ? 'cocktail'
+        : ICONA_PER_CHIAVE[r.chiave] || 'festa';
+      scheda.appendChild(rigaIcona(nomeIcona, r.label, r.valore));
     });
     box.appendChild(scheda);
 
