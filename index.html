@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prenota con Greta Animazione e Allestimenti</title>
+<style>
+  :root {
+    --viola: #7c3aed;
+    --rosa: #ec4899;
+    --arancio: #f97316;
+    --verde: #22c55e;
+    --blu: #3b82f6;
+    --testo: #1f2937;
+    --testo-muto: #6b7280;
+    --sfondo: #fffaf5;
+    --superficie: #ffffff;
+    --bordo: #e5e7eb;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--sfondo);
+    color: var(--testo);
+  }
+  .pagina { max-width: 640px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .intestazione {
+    padding: 24px 20px 16px;
+    text-align: center;
+    background: linear-gradient(135deg, #fdf4ff, #fff7ed);
+  }
+  .logo-testo { font-size: 22px; font-weight: 700; }
+  .logo-testo span { display: block; font-size: 14px; font-weight: 500; color: var(--testo-muto); margin-top: 2px; }
+  .logo-immagine { max-width: 220px; width: 60%; height: auto; margin: 0 auto; display: block; }
+  .contenuto { flex: 1; padding: 20px; }
+  .caricamento { text-align: center; color: var(--testo-muto); padding: 40px 0; }
+  .titolo-form { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .istruzioni { color: var(--testo-muto); margin: 0 0 20px; white-space: pre-wrap; }
+  .campo { margin-bottom: 18px; }
+  .campo label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+  .campo .obbligatoria { color: var(--rosa); }
+  .campo .descrizione { font-size: 12px; color: var(--testo-muto); margin-top: 4px; }
+  .campo input[type=text], .campo input[type=tel], .campo input[type=email],
+  .campo input[type=number], .campo input[type=date], .campo input[type=time],
+  .campo select, .campo textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--bordo);
+    border-radius: 10px;
+    font-size: 16px;
+    background: var(--superficie);
+    color: var(--testo);
+    font-family: inherit;
+  }
+  .campo textarea { min-height: 90px; resize: vertical; }
+  .opzioni-riga { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .opzioni-riga input { width: auto; }
+  .griglia-pacchetti { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .card-pacchetto {
+    border: 2px solid var(--bordo);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--superficie);
+    text-align: center;
+    transition: border-color 0.15s;
+  }
+  .card-pacchetto.selezionato { border-color: var(--viola); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+  .card-pacchetto img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--sfondo); }
+  .card-pacchetto .nome-pacchetto { padding: 8px 6px; font-size: 13px; font-weight: 600; }
+  .pulsante {
+    display: inline-block;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--viola), var(--rosa));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+  }
+  .pulsante:disabled { opacity: 0.5; cursor: not-allowed; }
+  .pulsante.secondario { background: var(--superficie); color: var(--testo); border: 1px solid var(--bordo); }
+  .pulsante.pericolo { background: var(--danger); }
+  .errore { color: var(--danger); font-size: 14px; margin: 8px 0; }
+  .avviso-bozza { font-size: 12px; color: var(--testo-muto); text-align: center; margin-top: 10px; }
+  .schermata-conferma { text-align: center; padding: 20px 0; }
+  .schermata-conferma .emoji { font-size: 48px; }
+  .codice { font-size: 22px; font-weight: 800; color: var(--viola); margin: 8px 0 20px; }
+  .box-link-personale {
+    background: var(--superficie);
+    border: 1px dashed var(--viola);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+    word-break: break-all;
+    font-size: 13px;
+  }
+  .riga-dettaglio { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--bordo); text-align: left; }
+  .riga-dettaglio .valore { color: var(--testo-muto); text-align: right; }
+  .sezione { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--bordo); }
+  .piede { text-align: center; padding: 16px; color: var(--testo-muto); font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="pagina">
+    <header class="intestazione">
+      <div class="logo-testo">🎈 Greta <span>Animazione e Allestimenti</span> 🎈</div>
+    </header>
+    <main id="app" class="contenuto">
+      <p class="caricamento">Caricamento…</p>
+    </main>
+    <footer class="piede">Greta Animazione e Allestimenti</footer>
+  </div>
+  <script>
+(function () {
+  var API_URL = 'https://mvzxzynapaegqmhkfpqa.supabase.co/functions/v1/prenota';
+  var params = new URLSearchParams(location.search);
+  var urlToken = params.get('token');
+  var tokenPersonale = params.get('p') || localStorage.getItem('prenotazione_token_personale_' + urlToken);
+  var app = document.getElementById('app');
+
+  function chiama(azione, payload) {
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(Object.assign({ azione: azione }, payload)),
+    }).then(function (r) {
+      return r.json().then(function (corpo) {
+        if (!r.ok) throw new Error(corpo.errore || 'Errore imprevisto.');
+        return corpo.dati;
+      });
+    });
+  }
+
+  function el(tag, attrs, figli) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'class') e.className = attrs[k];
+      else if (k === 'html') e.innerHTML = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+    (figli || []).forEach(function (f) { if (f) e.appendChild(f); });
+    return e;
+  }
+
+  function testo(tag, classe, contenuto) {
+    var e = el(tag, classe ? { class: classe } : null);
+    e.textContent = contenuto;
+    return e;
+  }
+
+  // ============================================================
+  // Modulo di prenotazione (nuovo, da url_token)
+  // ============================================================
+
+  function avviaModulo() {
+    app.innerHTML = '';
+    app.appendChild(testo('p', 'caricamento', 'Caricamento del modulo…'));
+
+    chiama('carica_link', { url_token: urlToken }).then(function (link) {
+      chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
+        renderModulo(link, pacchetti);
+      }).catch(function () {
+        renderModulo(link, []);
+      });
+    }).catch(function (err) {
+      app.innerHTML = '';
+      app.appendChild(testo('p', 'errore', err.message));
+    });
+  }
+
+  function renderModulo(link, pacchetti) {
+    var risposte = {};
+    var domande = (link.domande || []).slice().sort(function (a, b) { return a.ordine - b.ordine; });
+    var timerBozza = null;
+    var mioTokenPersonale = tokenPersonale;
+
+    app.innerHTML = '';
+    app.appendChild(testo('h1', 'titolo-form', link.titolo));
+    if (link.istruzioni) app.appendChild(testo('p', 'istruzioni', link.istruzioni));
+
+    var form = el('div', {});
+    domande.forEach(function (domanda) {
+      form.appendChild(renderCampo(domanda, pacchetti, risposte, salvaBozzaDebounced));
+    });
+    app.appendChild(form);
+
+    var errore = testo('p', 'errore', '');
+    app.appendChild(errore);
+
+    var bottone = el('button', { class: 'pulsante' });
+    bottone.textContent = 'Invia prenotazione';
+    bottone.onclick = function () {
+      bottone.disabled = true;
+      errore.textContent = '';
+      chiama('invia', {
+        url_token: mioTokenPersonale ? undefined : urlToken,
+        token_personale: mioTokenPersonale || undefined,
+        risposte: risposteArray(risposte),
+      }).then(function (esito) {
+        renderConferma(esito);
+      }).catch(function (err) {
+        errore.textContent = err.message;
+        bottone.disabled = false;
+      });
+    };
+    app.appendChild(bottone);
+    app.appendChild(testo('p', 'avviso-bozza', 'I tuoi dati vengono salvati automaticamente mentre compili.'));
+
+    function salvaBozzaDebounced() {
+      clearTimeout(timerBozza);
+      timerBozza = setTimeout(function () {
+        chiama('salva_bozza', {
+          url_token: mioTokenPersonale ? undefined : urlToken,
+          token_personale: mioTokenPersonale || undefined,
+          risposte: risposteArray(risposte),
+        }).then(function (esito) {
+          if (esito && esito.token_personale) {
+            mioTokenPersonale = esito.token_personale;
+            localStorage.setItem('prenotazione_token_personale_' + urlToken, mioTokenPersonale);
+          }
+        }).catch(function () { /* silenzioso: il salvataggio bozza non deve interrompere la compilazione */ });
+      }, 900);
+    }
+
+    function risposteArray(mappa) {
+      return Object.keys(mappa).map(function (id) { return { domanda_id: id, risposta: mappa[id] }; });
+    }
+  }
+
+  function renderCampo(domanda, pacchetti, risposte, onCambia) {
+    var wrapper = el('div', { class: 'campo' });
+    var label = el('label', {});
+    label.textContent = domanda.testo + (domanda.obbligatoria ? ' ' : '');
+    if (domanda.obbligatoria) {
+      var stellina = el('span', { class: 'obbligatoria' });
+      stellina.textContent = '*';
+      label.appendChild(stellina);
+    }
+    wrapper.appendChild(label);
+
+    function segna(valore) {
+      risposte[domanda.id] = valore;
+      onCambia();
+    }
+
+    if (domanda.tipo_campo === 'pacchetto') {
+      var griglia = el('div', { class: 'griglia-pacchetti' });
+      pacchetti.forEach(function (p) {
+        var card = el('div', { class: 'card-pacchetto' });
+        if (p.immagine_url) {
+          card.appendChild(el('img', { src: p.immagine_url, alt: p.nome }));
+        }
+        card.appendChild(testo('div', 'nome-pacchetto', p.nome));
+        card.onclick = function () {
+          Array.prototype.forEach.call(griglia.children, function (c) { c.classList.remove('selezionato'); });
+          card.classList.add('selezionato');
+          segna(p.id);
+        };
+        griglia.appendChild(card);
+      });
+      wrapper.appendChild(griglia);
+    } else if (domanda.tipo_campo === 'note') {
+      var area = el('textarea', { placeholder: domanda.placeholder || '' });
+      area.oninput = function () { segna(area.value); };
+      wrapper.appendChild(area);
+    } else if (domanda.tipo_campo === 'scelta_singola' && domanda.opzioni) {
+      domanda.opzioni.forEach(function (opzione) {
+        var riga = el('div', { class: 'opzioni-riga' });
+        var input = el('input', { type: 'radio', name: domanda.id });
+        input.onchange = function () { segna(opzione); };
+        riga.appendChild(input);
+        riga.appendChild(testo('span', null, opzione));
+        wrapper.appendChild(riga);
+      });
+    } else if (domanda.tipo_campo === 'scelta_multipla' && domanda.opzioni) {
+      var selezionate = [];
+      domanda.opzioni.forEach(function (opzione) {
+        var riga = el('div', { class: 'opzioni-riga' });
+        var input = el('input', { type: 'checkbox' });
+        input.onchange = function () {
+          if (input.checked) selezionate.push(opzione);
+          else selezionate = selezionate.filter(function (o) { return o !== opzione; });
+          segna(selezionate.slice());
+        };
+        riga.appendChild(input);
+        riga.appendChild(testo('span', null, opzione));
+        wrapper.appendChild(riga);
+      });
+    } else if (domanda.tipo_campo === 'selezione_da_elenco' && domanda.opzioni) {
+      var select = el('select', {});
+      select.appendChild(el('option', { value: '' }));
+      domanda.opzioni.forEach(function (opzione) {
+        var opt = el('option', { value: opzione });
+        opt.textContent = opzione;
+        select.appendChild(opt);
+      });
+      select.onchange = function () { segna(select.value); };
+      wrapper.appendChild(select);
+    } else {
+      var tipoInput = domanda.tipo_campo === 'numerico' ? 'number'
+        : domanda.tipo_campo === 'data' ? 'date'
+        : domanda.tipo_campo === 'orario' ? 'time'
+        : 'text';
+      var input2 = el('input', { type: tipoInput, placeholder: domanda.placeholder || '' });
+      input2.oninput = function () { segna(input2.value); };
+      wrapper.appendChild(input2);
+    }
+
+    if (domanda.descrizione) wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
+    return wrapper;
+  }
+
+  function renderConferma(esito) {
+    app.innerHTML = '';
+    var box = el('div', { class: 'schermata-conferma' });
+    box.appendChild(testo('div', 'emoji', '🎉'));
+    box.appendChild(testo('h1', 'titolo-form', 'Prenotazione confermata!'));
+    box.appendChild(testo('div', 'codice', esito.codice_prenotazione || ''));
+
+    var tokenSalvato = esito.token_personale || localStorage.getItem('prenotazione_token_personale_' + urlToken);
+    if (tokenSalvato) {
+      var linkPersonale = location.origin + location.pathname + '?p=' + tokenSalvato;
+      var linkBox = el('div', { class: 'box-link-personale' });
+      linkBox.appendChild(testo('p', null, 'Salva questo link per rivedere o modificare la tua prenotazione in futuro:'));
+      var link = testo('div', null, linkPersonale);
+      link.style.fontWeight = '600';
+      linkBox.appendChild(link);
+      var copia = el('button', { class: 'pulsante secondario' });
+      copia.style.marginTop = '10px';
+      copia.textContent = 'Copia link';
+      copia.onclick = function () {
+        navigator.clipboard.writeText(linkPersonale).then(function () {
+          copia.textContent = 'Copiato ✓';
+        });
+      };
+      linkBox.appendChild(copia);
+      box.appendChild(linkBox);
+    }
+
+    app.appendChild(box);
+  }
+
+  // ============================================================
+  // Vista personale (da token personale ?p=)
+  // ============================================================
+
+  function avviaVistaPersonale() {
+    app.innerHTML = '';
+    app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
+
+    chiama('carica_prenotazione', { token_personale: tokenPersonale }).then(function (p) {
+      renderVistaPersonale(p);
+    }).catch(function (err) {
+      app.innerHTML = '';
+      app.appendChild(testo('p', 'errore', err.message));
+    });
+  }
+
+  function renderVistaPersonale(p) {
+    app.innerHTML = '';
+
+    if (p.stato_prenotazione === 'in_compilazione') {
+      avviaModuloDaBozza(p);
+      return;
+    }
+
+    app.appendChild(testo('h1', 'titolo-form', p.titolo_link_snapshot || 'La tua prenotazione'));
+    if (p.codice_prenotazione) app.appendChild(testo('div', 'codice', p.codice_prenotazione));
+
+    if (p.stato_prenotazione === 'annullata') {
+      app.appendChild(testo('p', 'errore', 'Questa prenotazione è stata annullata.'));
+      return;
+    }
+
+    var sezioneDettagli = el('div', { class: 'sezione' });
+    (p.risposte_cliente || []).forEach(function (r) {
+      var riga = el('div', { class: 'riga-dettaglio' });
+      riga.appendChild(testo('span', null, r.testo_domanda));
+      var valore = testo('span', 'valore', typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
+      riga.appendChild(valore);
+      sezioneDettagli.appendChild(riga);
+    });
+    app.appendChild(sezioneDettagli);
+
+    if (p.sola_lettura) {
+      app.appendChild(testo('p', 'istruzioni', 'La modifica non è più disponibile per questo evento.'));
+      return;
+    }
+
+    // Numero bambini
+    var sezioneBambini = el('div', { class: 'sezione' });
+    sezioneBambini.appendChild(testo('h2', 'titolo-form', 'Numero di bambini'));
+    var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
+    sezioneBambini.appendChild(inputBambini);
+    var salvaBambini = el('button', { class: 'pulsante secondario' });
+    salvaBambini.style.marginTop = '10px';
+    salvaBambini.textContent = p.numero_bambini_confermato_il ? 'Aggiorna numero' : 'Salva numero';
+    var erroreBambini = testo('p', 'errore', '');
+    salvaBambini.onclick = function () {
+      var azione = 'aggiorna_numero_bambini';
+      chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
+        .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
+        .catch(function (err) { erroreBambini.textContent = err.message; });
+    };
+    sezioneBambini.appendChild(salvaBambini);
+    sezioneBambini.appendChild(erroreBambini);
+    app.appendChild(sezioneBambini);
+
+    // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
+    var sezioneRichiesta = el('div', { class: 'sezione' });
+    sezioneRichiesta.appendChild(testo('h2', 'titolo-form', 'Hai bisogno di cambiare qualcosa?'));
+    if (p.richiesta_modifica_corrente && p.richiesta_modifica_corrente.stato === 'in_attesa') {
+      sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di modifica in attesa di risposta.'));
+    } else {
+      var notaRichiesta = el('textarea', { placeholder: 'Scrivi qui cosa vorresti cambiare…' });
+      sezioneRichiesta.appendChild(notaRichiesta);
+      var bottoneRichiesta = el('button', { class: 'pulsante secondario' });
+      bottoneRichiesta.style.marginTop = '10px';
+      bottoneRichiesta.textContent = 'Invia richiesta di modifica';
+      var erroreRichiesta = testo('p', 'errore', '');
+      bottoneRichiesta.onclick = function () {
+        if (!notaRichiesta.value.trim()) { erroreRichiesta.textContent = 'Scrivi cosa vorresti cambiare.'; return; }
+        chiama('richiedi_modifica', {
+          token_personale: tokenPersonale,
+          campi_richiesti: [{ campo: 'informazioni_da_sapere', valore_attuale: null, valore_richiesto: notaRichiesta.value.trim() }],
+          nota_cliente: notaRichiesta.value.trim(),
+        }).then(function () {
+          bottoneRichiesta.textContent = 'Richiesta inviata ✓';
+          bottoneRichiesta.disabled = true;
+        }).catch(function (err) { erroreRichiesta.textContent = err.message; });
+      };
+      sezioneRichiesta.appendChild(bottoneRichiesta);
+      sezioneRichiesta.appendChild(erroreRichiesta);
+    }
+    app.appendChild(sezioneRichiesta);
+
+    // Annullamento
+    var sezioneAnnulla = el('div', { class: 'sezione' });
+    var bottoneAnnulla = el('button', { class: 'pulsante pericolo' });
+    bottoneAnnulla.textContent = 'Annulla la mia prenotazione';
+    var erroreAnnulla = testo('p', 'errore', '');
+    bottoneAnnulla.onclick = function () {
+      if (!confirm('Vuoi davvero annullare questa prenotazione?')) return;
+      chiama('richiedi_annullamento', { token_personale: tokenPersonale })
+        .then(function () { location.reload(); })
+        .catch(function (err) { erroreAnnulla.textContent = err.message; });
+    };
+    sezioneAnnulla.appendChild(bottoneAnnulla);
+    sezioneAnnulla.appendChild(erroreAnnulla);
+    app.appendChild(sezioneAnnulla);
+  }
+
+  function avviaModuloDaBozza(p) {
+    chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
+      renderModuloBozza(p, pacchetti);
+    }).catch(function () {
+      renderModuloBozza(p, []);
+    });
+  }
+
+  function renderModuloBozza(p, pacchetti) {
+    var link = {
+      titolo: p.titolo_link_snapshot,
+      istruzioni: p.istruzioni_link_snapshot,
+      domande: p.domande_snapshot || [],
+    };
+    renderModulo(link, pacchetti);
+  }
+
+  // ============================================================
+
+  if (tokenPersonale) {
+    avviaVistaPersonale();
+  } else if (urlToken) {
+    avviaModulo();
+  } else {
+    app.innerHTML = '';
+    app.appendChild(testo('p', 'errore', 'Link non valido.'));
+  }
+})();
+  </script>
+</body>
+</html>
