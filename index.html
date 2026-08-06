@@ -34,27 +34,22 @@
     --globo5-a: #ffe7ec; --globo5-b: #f2aabd; /* rosa chiaro */
   }
 
-  /* 💍 Matrimonio bimbi: elegante, pastello champagne */
+  /* 💍 Matrimonio bimbi: elegante, avorio e oro con fiori */
   body.tema-matrimonio_bimbi {
-    --rosa-chiara: #f6e9ea;
-    --rosa: #c98fa0;
-    --rosa-scura: #9c5c72;
-    --oro: #c6a664;
-    --menta: #a9c2ab;
-    --crema: #fbf6ef;
+    --rosa-chiara: #f7f1e0;
+    --rosa: #b8935a;
+    --rosa-scura: #8f6f3f;
+    --oro: #c9a15a;
+    --menta: #8a9a6f;
+    --crema: #fffdf7;
     --superficie: #ffffff;
-    --testo: #3a332e;
-    --testo-muto: #9a8d86;
-    --bordo: #ece1d6;
-    --bordo-tratteggiato: #d9c3a8;
-    --danger: #b25a63;
-    --bagliore-1: rgba(230, 200, 190, 0.4);
-    --bagliore-2: rgba(214, 196, 158, 0.4);
-    --globo1-a: #f2e3c0; --globo1-b: #d8bd82; /* champagne */
-    --globo2-a: #f7e3e6; --globo2-b: #e0b9c4; /* blush */
-    --globo3-a: #fffdf8; --globo3-b: #efe6d8; /* avorio */
-    --globo4-a: #e3ede1; --globo4-b: #a9c2ab; /* salvia */
-    --globo5-a: #f6e6ec; --globo5-b: #d9a9b8; /* rosa cipria */
+    --testo: #2e2a24;
+    --testo-muto: #8a7f6a;
+    --bordo: #ece3d0;
+    --bordo-tratteggiato: #d9c18f;
+    --danger: #b2554a;
+    --bagliore-1: rgba(201, 161, 90, 0.16);
+    --bagliore-2: rgba(201, 161, 90, 0.1);
   }
 
   /* 🥂 Intrattenimento adulti: sofisticato, notturno/dorato */
@@ -95,6 +90,12 @@
   /* ---------- Intestazione con palloncini ---------- */
   .intestazione { position: relative; padding: 8px 20px 6px; text-align: center; overflow: hidden; }
   .decorazione-palloncini { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-fiori { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
+  body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
+  .decorazione-anelli { display: none; text-align: center; margin: 14px 0 0; opacity: 0.8; }
+  body.tema-matrimonio_bimbi .decorazione-anelli { display: block; }
+  .decorazione-anelli svg { width: 34px; height: 22px; }
   .logo-riquadro { position: relative; margin-top: -34px; }
   .logo-script {
     font-family: "Alex Brush", cursive;
@@ -373,6 +374,38 @@
           <circle cx="260" cy="80" r="4" /><circle cx="720" cy="95" r="4" />
         </g>
       </svg>
+      <svg class="decorazione-fiori" viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <symbol id="fioreOro" viewBox="0 0 40 40">
+            <g fill="#fffdf8" stroke="var(--oro)" stroke-width="1.2">
+              <ellipse cx="20" cy="10" rx="8" ry="13" transform="rotate(0 20 20)" />
+              <ellipse cx="20" cy="10" rx="8" ry="13" transform="rotate(72 20 20)" />
+              <ellipse cx="20" cy="10" rx="8" ry="13" transform="rotate(144 20 20)" />
+              <ellipse cx="20" cy="10" rx="8" ry="13" transform="rotate(216 20 20)" />
+              <ellipse cx="20" cy="10" rx="8" ry="13" transform="rotate(288 20 20)" />
+            </g>
+            <circle cx="20" cy="20" r="5" fill="var(--oro)" />
+          </symbol>
+        </defs>
+
+        <!-- ramo sinistro -->
+        <path d="M-10,-10 C40,25 95,45 155,100" stroke="var(--oro)" stroke-width="2" fill="none" opacity="0.75" />
+        <ellipse cx="24" cy="8" rx="13" ry="6" fill="var(--menta)" opacity="0.8" transform="rotate(35 24 8)" />
+        <ellipse cx="70" cy="30" rx="12" ry="6" fill="var(--menta)" opacity="0.8" transform="rotate(50 70 30)" />
+        <ellipse cx="112" cy="62" rx="11" ry="5" fill="var(--menta)" opacity="0.8" transform="rotate(30 112 62)" />
+        <use href="#fioreOro" x="-6" y="-8" width="48" height="48" />
+        <use href="#fioreOro" x="58" y="16" width="36" height="36" />
+        <use href="#fioreOro" x="118" y="58" width="28" height="28" />
+
+        <!-- ramo destro (specchiato) -->
+        <path d="M1010,-10 C960,25 905,45 845,100" stroke="var(--oro)" stroke-width="2" fill="none" opacity="0.75" />
+        <ellipse cx="976" cy="8" rx="13" ry="6" fill="var(--menta)" opacity="0.8" transform="rotate(-35 976 8)" />
+        <ellipse cx="930" cy="30" rx="12" ry="6" fill="var(--menta)" opacity="0.8" transform="rotate(-50 930 30)" />
+        <ellipse cx="888" cy="62" rx="11" ry="5" fill="var(--menta)" opacity="0.8" transform="rotate(-30 888 62)" />
+        <use href="#fioreOro" x="958" y="-8" width="48" height="48" />
+        <use href="#fioreOro" x="906" y="16" width="36" height="36" />
+        <use href="#fioreOro" x="854" y="58" width="28" height="28" />
+      </svg>
       <div class="logo-riquadro">
         <div class="logo-script">Greta<span class="cuore"> ♡</span></div>
         <span class="logo-sottotitolo">ANIMAZIONE E ALLESTIMENTI</span>
@@ -402,7 +435,19 @@
     regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="9" rx="1.5"/><path d="M4 14h16M12 10v9"/><path d="M8.5 10c-1.7 0-2.4-2.8-.7-3.5C9.5 5.9 12 7 12 10"/><path d="M15.5 10c1.7 0 2.4-2.8.7-3.5C14.5 5.9 12 7 12 10"/></svg>',
     nota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L15.5 5.5l3 3L8 20l-4 1Z"/><path d="M13.5 7l3 3"/></svg>',
     busta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    coronaCheck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M8.3 12.3l2.4 2.4 5-5"/><path d="M5.3 17.3c-1 .4-1.8 1-1.8 1M18.7 17.3c1 .4 1.8 1 1.8 1" stroke-width="1.3"/></svg>',
   };
+
+  var anelliSvg = '<svg viewBox="0 0 40 26" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="13" r="9.3" fill="none" stroke="var(--oro)" stroke-width="2.2"/><circle cx="26" cy="13" r="9.3" fill="none" stroke="var(--oro)" stroke-width="2.2"/></svg>';
+
+  function decorazioneAnelli() {
+    return el('div', { class: 'decorazione-anelli', html: anelliSvg });
+  }
+
+  function temaCorrente() {
+    var match = /tema-(\S+)/.exec(document.body.className);
+    return match ? match[1] : 'compleanno_bimbi';
+  }
 
   var ICONA_PER_CHIAVE = {
     cliente: 'persona',
@@ -516,6 +561,7 @@
     };
     app.appendChild(bottone);
     app.appendChild(testo('p', 'avviso-bozza', 'I tuoi dati vengono salvati automaticamente mentre compili.'));
+    app.appendChild(decorazioneAnelli());
 
     function salvaBozzaDebounced() {
       clearTimeout(timerBozza);
@@ -682,7 +728,8 @@
     }
 
     var scheda = el('div', { class: 'scheda-grazie' });
-    scheda.appendChild(el('div', { class: 'cerchio-icona-grande', html: ICONE.calendarioCheck }));
+    var iconaGrazie = temaCorrente() === 'matrimonio_bimbi' ? ICONE.coronaCheck : ICONE.calendarioCheck;
+    scheda.appendChild(el('div', { class: 'cerchio-icona-grande', html: iconaGrazie }));
     var grazie = el('p', { class: 'testo-grazie' });
     grazie.appendChild(el('b', {}, [document.createTextNode('Grazie! ')]));
     grazie.appendChild(document.createTextNode('La tua festa è in buone mani.'));
@@ -719,6 +766,7 @@
     }
 
     box.appendChild(testo('div', 'chiusura-script', 'Ci vediamo presto!'));
+    box.appendChild(decorazioneAnelli());
 
     app.appendChild(box);
   }
