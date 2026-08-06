@@ -12,6 +12,7 @@
 />
 <style>
   :root {
+    /* Tema di default: 🎈 Compleanno bimbi */
     --rosa-chiara: #ffe4ec;
     --rosa: #ec6f91;
     --rosa-scura: #d6467b;
@@ -24,15 +25,69 @@
     --bordo: #f0d9d0;
     --bordo-tratteggiato: #f0b8c4;
     --danger: #c4455c;
+    --bagliore-1: rgba(255, 210, 222, 0.55);
+    --bagliore-2: rgba(255, 231, 199, 0.55);
+    --globo1-a: #f6e1ae; --globo1-b: #d8b366; /* oro */
+    --globo2-a: #ffd9d0; --globo2-b: #ef9fa0; /* corallo */
+    --globo3-a: #fffaf2; --globo3-b: #f0e1d0; /* crema */
+    --globo4-a: #cdf0e3; --globo4-b: #8fd3c0; /* menta */
+    --globo5-a: #ffe7ec; --globo5-b: #f2aabd; /* rosa chiaro */
   }
+
+  /* 💍 Matrimonio bimbi: elegante, pastello champagne */
+  body.tema-matrimonio_bimbi {
+    --rosa-chiara: #f6e9ea;
+    --rosa: #c98fa0;
+    --rosa-scura: #9c5c72;
+    --oro: #c6a664;
+    --menta: #a9c2ab;
+    --crema: #fbf6ef;
+    --superficie: #ffffff;
+    --testo: #3a332e;
+    --testo-muto: #9a8d86;
+    --bordo: #ece1d6;
+    --bordo-tratteggiato: #d9c3a8;
+    --danger: #b25a63;
+    --bagliore-1: rgba(230, 200, 190, 0.4);
+    --bagliore-2: rgba(214, 196, 158, 0.4);
+    --globo1-a: #f2e3c0; --globo1-b: #d8bd82; /* champagne */
+    --globo2-a: #f7e3e6; --globo2-b: #e0b9c4; /* blush */
+    --globo3-a: #fffdf8; --globo3-b: #efe6d8; /* avorio */
+    --globo4-a: #e3ede1; --globo4-b: #a9c2ab; /* salvia */
+    --globo5-a: #f6e6ec; --globo5-b: #d9a9b8; /* rosa cipria */
+  }
+
+  /* 🥂 Intrattenimento adulti: sofisticato, notturno/dorato */
+  body.tema-intrattenimento_adulti {
+    --rosa-chiara: #3c2f38;
+    --rosa: #caa15a;
+    --rosa-scura: #9c7a3e;
+    --oro: #d8b878;
+    --menta: #8a6a4a;
+    --crema: #241b24;
+    --superficie: #2f2430;
+    --testo: #f3e9e2;
+    --testo-muto: #b9a8ae;
+    --bordo: #4a3a41;
+    --bordo-tratteggiato: #8a6a4a;
+    --danger: #e08a93;
+    --bagliore-1: rgba(154, 110, 74, 0.3);
+    --bagliore-2: rgba(90, 40, 52, 0.35);
+    --globo1-a: #e9cf9a; --globo1-b: #b98f4a; /* oro */
+    --globo2-a: #8a4a52; --globo2-b: #5c2a34; /* bordeaux */
+    --globo3-a: #5c4a56; --globo3-b: #3a2c36; /* antracite */
+    --globo4-a: #6a5240; --globo4-b: #4a3626; /* bronzo */
+    --globo5-a: #4a3a48; --globo5-b: #2e2430; /* prugna */
+  }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--testo);
     background:
-      radial-gradient(circle at 0% 0%, rgba(255, 210, 222, 0.55), transparent 42%),
-      radial-gradient(circle at 100% 0%, rgba(255, 231, 199, 0.55), transparent 42%),
+      radial-gradient(circle at 0% 0%, var(--bagliore-1), transparent 42%),
+      radial-gradient(circle at 100% 0%, var(--bagliore-2), transparent 42%),
       var(--crema);
   }
   .pagina { max-width: 640px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
@@ -119,6 +174,9 @@
   }
   .campo .campo-input-wrap input { padding-left: 46px; }
   .campo textarea { min-height: 90px; resize: vertical; }
+  /* Le icone native di data/ora restano scure di default: sui temi scuri diventerebbero
+     invisibili sopra un campo altrettanto scuro. */
+  body.tema-intrattenimento_adulti .campo input::-webkit-calendar-picker-indicator { filter: invert(0.85); }
 
   .opzioni-riga { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .opzioni-riga input { width: auto; }
@@ -267,19 +325,19 @@
       <svg class="decorazione-palloncini" viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <radialGradient id="gCorallo" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#ffd9d0" /><stop offset="100%" stop-color="#ef9fa0" />
+            <stop offset="0%" style="stop-color: var(--globo2-a)" /><stop offset="100%" style="stop-color: var(--globo2-b)" />
           </radialGradient>
           <radialGradient id="gCrema" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#fffaf2" /><stop offset="100%" stop-color="#f0e1d0" />
+            <stop offset="0%" style="stop-color: var(--globo3-a)" /><stop offset="100%" style="stop-color: var(--globo3-b)" />
           </radialGradient>
           <radialGradient id="gOro" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#f6e1ae" /><stop offset="100%" stop-color="#d8b366" />
+            <stop offset="0%" style="stop-color: var(--globo1-a)" /><stop offset="100%" style="stop-color: var(--globo1-b)" />
           </radialGradient>
           <radialGradient id="gMenta" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#cdf0e3" /><stop offset="100%" stop-color="#8fd3c0" />
+            <stop offset="0%" style="stop-color: var(--globo4-a)" /><stop offset="100%" style="stop-color: var(--globo4-b)" />
           </radialGradient>
           <radialGradient id="gRosaChiaro" cx="35%" cy="28%" r="75%">
-            <stop offset="0%" stop-color="#ffe7ec" /><stop offset="100%" stop-color="#f2aabd" />
+            <stop offset="0%" style="stop-color: var(--globo5-a)" /><stop offset="100%" style="stop-color: var(--globo5-b)" />
           </radialGradient>
         </defs>
 
@@ -391,6 +449,13 @@
     return e;
   }
 
+  // Applica la base grafica scelta dall'amministratrice per questo link (o fissata sulla
+  // prenotazione al momento della bozza/invio). 'compleanno_bimbi' è il tema di default, definito
+  // in :root, quindi non richiede alcuna classe.
+  function applicaTema(tema) {
+    document.body.className = tema && tema !== 'compleanno_bimbi' ? 'tema-' + tema : '';
+  }
+
   // ============================================================
   // Modulo di prenotazione (nuovo, da url_token)
   // ============================================================
@@ -400,6 +465,7 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento del modulo…'));
 
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
+      applicaTema(link.tema);
       chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
         renderModulo(link, pacchetti);
       }).catch(function () {
@@ -666,6 +732,7 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
 
     chiama('carica_prenotazione', { token_personale: tokenPersonale }).then(function (p) {
+      applicaTema(p.tema);
       renderVistaPersonale(p);
     }).catch(function (err) {
       app.innerHTML = '';
