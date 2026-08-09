@@ -439,7 +439,11 @@
 (function () {
   var API_URL = 'https://mvzxzynapaegqmhkfpqa.supabase.co/functions/v1/prenota';
   var params = new URLSearchParams(location.search);
-  var urlToken = params.get('token');
+  // Indirizzo leggibile (es. /matrimonio) al posto del solo ?token=codice: se il percorso ha un
+  // segmento non vuoto lo usiamo come token, altrimenti si ripiega su ?token= per compatibilità
+  // con eventuali link già condivisi nel vecchio formato.
+  var segmentoPercorso = location.pathname.replace(/^\/+|\/+$/g, '');
+  var urlToken = segmentoPercorso ? decodeURIComponent(segmentoPercorso) : params.get('token');
   var tokenPersonale = params.get('p') || localStorage.getItem('prenotazione_token_personale_' + urlToken);
   var app = document.getElementById('app');
 
