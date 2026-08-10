@@ -603,6 +603,12 @@
         token_personale: mioTokenPersonale || undefined,
         risposte: risposteArray(risposte),
       }).then(function (esito) {
+        // Ricliccando lo stesso link (stesso dispositivo) deve ritrovare questa prenotazione
+        // invece di aprirne una vuota: serve salvare qui il token_personale, non solo offrirlo
+        // come link di riserva da copiare a mano.
+        if (esito.token_personale) {
+          localStorage.setItem('prenotazione_token_personale_' + urlToken, esito.token_personale);
+        }
         renderConferma(esito, riepilogoConferma(domande, risposte));
       }).catch(function (err) {
         errore.textContent = err.message;
