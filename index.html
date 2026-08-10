@@ -681,21 +681,15 @@
     }
 
     if (domanda.tipo_campo === 'pacchetto') {
-      var griglia = el('div', { class: 'griglia-pacchetti' });
+      var selectPacchetto = el('select', {});
+      selectPacchetto.appendChild(el('option', { value: '' }));
       pacchetti.forEach(function (p) {
-        var card = el('div', { class: 'card-pacchetto' });
-        if (p.immagine_url) {
-          card.appendChild(el('img', { src: p.immagine_url, alt: p.nome }));
-        }
-        card.appendChild(testo('div', 'nome-pacchetto', p.nome));
-        card.onclick = function () {
-          Array.prototype.forEach.call(griglia.children, function (c) { c.classList.remove('selezionato'); });
-          card.classList.add('selezionato');
-          segna(p.id);
-        };
-        griglia.appendChild(card);
+        var opt = el('option', { value: p.id });
+        opt.textContent = p.nome;
+        selectPacchetto.appendChild(opt);
       });
-      wrapper.appendChild(griglia);
+      selectPacchetto.onchange = function () { segna(selectPacchetto.value); };
+      wrapper.appendChild(selectPacchetto);
     } else if (domanda.tipo_campo === 'note') {
       var area = el('textarea', { placeholder: domanda.placeholder || '' });
       area.oninput = function () { segna(area.value); };
