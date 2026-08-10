@@ -840,20 +840,26 @@
 
     chiama('carica_prenotazione', { token_personale: tokenPersonale }).then(function (p) {
       applicaTema(p.tema);
-      renderVistaPersonale(p);
+      if (p.stato_prenotazione === 'in_compilazione') {
+        avviaModuloDaBozza(p);
+        return;
+      }
+      chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
+        renderVistaPersonale(p, pacchetti);
+      }).catch(function () {
+        renderVistaPersonale(p, []);
+      });
     }).catch(function (err) {
       app.innerHTML = '';
       app.appendChild(testo('p', 'errore', err.message));
     });
   }
 
-  function renderVistaPersonale(p) {
+  function renderVistaPersonale(p, pacchetti) {
     app.innerHTML = '';
 
-    if (p.stato_prenotazione === 'in_compilazione') {
-      avviaModuloDaBozza(p);
-      return;
-    }
+    var nomiPacchetto = {};
+    (pacchetti || []).forEach(function (pacc) { nomiPacchetto[pacc.id] = pacc.nome; });
 
     app.appendChild(testo('h1', 'titolo-form', p.titolo_link_snapshot || 'La tua prenotazione'));
     if (p.codice_prenotazione) {
@@ -873,7 +879,10 @@
     (p.risposte_cliente || []).forEach(function (r) {
       var riga = el('div', { class: 'riga-dettaglio' });
       riga.appendChild(testo('span', null, r.testo_domanda));
-      var valore = testo('span', 'valore', typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
+      var valoreTesto = r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
+        ? nomiPacchetto[r.risposta]
+        : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
+      var valore = testo('span', 'valore', valoreTesto);
       riga.appendChild(valore);
       sezioneDettagli.appendChild(riga);
     });
