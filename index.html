@@ -560,10 +560,35 @@
     if (link.istruzioni) app.appendChild(testo('p', 'istruzioni', link.istruzioni));
 
     var form = el('div', {});
+    var wrapperPerId = {};
+    function onCampoCambiato() {
+      aggiornaVisibilitaCondizionali();
+      salvaBozzaDebounced();
+    }
     domande.forEach(function (domanda) {
-      form.appendChild(renderCampo(domanda, pacchetti, risposte, salvaBozzaDebounced));
+      var wrapper = renderCampo(domanda, pacchetti, risposte, onCampoCambiato);
+      wrapperPerId[domanda.id] = wrapper;
+      form.appendChild(wrapper);
     });
     app.appendChild(form);
+    aggiornaVisibilitaCondizionali();
+
+    // Nasconde/mostra le domande con "mostra_se_domanda_id" in base alla risposta corrente della
+    // domanda da cui dipendono — e dimentica la risposta già data se torna nascosta, così non
+    // viene inviata una risposta irrilevante rimasta dietro le quinte.
+    function aggiornaVisibilitaCondizionali() {
+      domande.forEach(function (domanda) {
+        if (!domanda.mostra_se_domanda_id) return;
+        var wrapper = wrapperPerId[domanda.id];
+        if (!wrapper) return;
+        var valoreGate = risposte[domanda.mostra_se_domanda_id];
+        var soddisfatta = Array.isArray(valoreGate)
+          ? valoreGate.indexOf(domanda.mostra_se_valore) !== -1
+          : valoreGate === domanda.mostra_se_valore;
+        wrapper.style.display = soddisfatta ? '' : 'none';
+        if (!soddisfatta) delete risposte[domanda.id];
+      });
+    }
 
     var errore = testo('p', 'errore', '');
     app.appendChild(errore);
