@@ -662,6 +662,22 @@
     return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+  var GIORNI_SETTIMANA = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+
+  // Formatta 'YYYY-MM-DD' (valore grezzo di un <input type="date">) in stile italiano GG/MM/AAAA
+  // con il giorno della settimana tra parentesi — costruisce la data dai singoli numeri invece di
+  // affidarsi al parsing di new Date(stringaIso), per evitare ambiguità di fuso orario tra il
+  // giorno digitato dalla cliente e quello mostrato.
+  function formattaDataConGiorno(valoreIso) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(valoreIso));
+    if (!match) return String(valoreIso);
+    var anno = Number(match[1]), mese = Number(match[2]), giorno = Number(match[3]);
+    var d = new Date(anno, mese - 1, giorno);
+    var gg = String(giorno).padStart(2, '0');
+    var mm = String(mese).padStart(2, '0');
+    return gg + '/' + mm + '/' + anno + ' (' + GIORNI_SETTIMANA[d.getDay()] + ')';
+  }
+
   function iconaCampo(domanda) {
     if (domanda.chiave_destinazione === 'tipo_evento' && temaCorrente() === 'intrattenimento_adulti') {
       return ICONE.cocktail;
@@ -881,7 +897,9 @@
       riga.appendChild(testo('span', null, r.testo_domanda));
       var valoreTesto = r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
         ? nomiPacchetto[r.risposta]
-        : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
+        : r.tipo_campo === 'data' && typeof r.risposta === 'string'
+          ? formattaDataConGiorno(r.risposta)
+          : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
       var valore = testo('span', 'valore', valoreTesto);
       riga.appendChild(valore);
       sezioneDettagli.appendChild(riga);
