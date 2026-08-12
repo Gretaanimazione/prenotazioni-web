@@ -321,6 +321,15 @@
   .sezione { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--bordo); }
   .sezione .titolo-form { font-size: 24px; margin-bottom: 10px; }
   .piede { text-align: center; padding: 16px; color: var(--testo-muto); font-size: 12px; }
+  .altre-prenotazioni { margin: 18px 0; display: flex; flex-direction: column; }
+  .card-prenotazione {
+    text-align: left; padding: 14px 16px; margin-top: 12px; border-radius: 14px;
+    border: 1px solid var(--bordo); background: var(--superficie); cursor: pointer;
+  }
+  .card-prenotazione:hover { border-color: var(--rosa); }
+  .card-codice { font-weight: 700; }
+  .card-data { color: var(--testo-muto); font-size: 14px; margin-top: 2px; }
+  .card-stato { font-size: 13px; margin-top: 6px; display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--crema); }
 </style>
 </head>
 <body>
@@ -444,12 +453,57 @@
   // con eventuali link già condivisi nel vecchio formato.
   var segmentoPercorso = location.pathname.replace(/^\/+|\/+$/g, '');
   var urlToken = segmentoPercorso ? decodeURIComponent(segmentoPercorso) : params.get('token');
-  // Distingue un link personale esplicito (?p=... condiviso apposta per quella prenotazione) da un
-  // token ritrovato nella cache del browser (link generico riaperto): solo nel primo caso ha senso
-  // insistere su una prenotazione annullata, vedi avviaVistaPersonale più sotto.
   var tokenPersonaleDaUrl = params.get('p');
-  var tokenPersonale = tokenPersonaleDaUrl || localStorage.getItem('prenotazione_token_personale_' + urlToken);
   var app = document.getElementById('app');
+
+  // ============================================================
+  // Prenotazioni fatte con questo stesso link su questo dispositivo (per chi, come una wedding
+  // planner, ne fa più di una tramite lo stesso link): un array di token_personale invece di uno
+  // solo. La vecchia chiave singolare viene letta una volta e migrata nel nuovo formato, poi non
+  // serve più.
+  // ============================================================
+
+  function chiaveTokenPersonali() {
+    return 'prenotazione_token_personali_' + urlToken;
+  }
+
+  function leggiTokenPersonali() {
+    var lista = [];
+    try {
+      var salvati = localStorage.getItem(chiaveTokenPersonali());
+      if (salvati) lista = JSON.parse(salvati) || [];
+    } catch (e) {
+      lista = [];
+    }
+    // Migrazione una tantum dalla vecchia chiave singolare, se presente e non già in lista.
+    var vecchioToken = localStorage.getItem('prenotazione_token_personale_' + urlToken);
+    if (vecchioToken && lista.indexOf(vecchioToken) === -1) {
+      lista.push(vecchioToken);
+      localStorage.setItem(chiaveTokenPersonali(), JSON.stringify(lista));
+      localStorage.removeItem('prenotazione_token_personale_' + urlToken);
+    }
+    return lista;
+  }
+
+  function aggiungiTokenPersonale(token) {
+    if (!token) return;
+    var lista = leggiTokenPersonali();
+    if (lista.indexOf(token) === -1) {
+      lista.push(token);
+      localStorage.setItem(chiaveTokenPersonali(), JSON.stringify(lista));
+    }
+  }
+
+  function rimuoviTokenPersonale(token) {
+    var lista = leggiTokenPersonali().filter(function (t) { return t !== token; });
+    localStorage.setItem(chiaveTokenPersonali(), JSON.stringify(lista));
+  }
+
+  // Il link personale esplicito (?p=...) ha sempre la precedenza e apre direttamente quella
+  // prenotazione, comprese quelle annullate: è il link "di riserva" mandato apposta per una
+  // prenotazione specifica. Senza ?p=, con esattamente una prenotazione già fatta si comporta come
+  // sempre (rientra lì); con zero o più di una si passa dalla schermata "Le tue prenotazioni".
+  var tokenPersonale = tokenPersonaleDaUrl;
 
   var ICONE = {
     persona: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 19c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
@@ -609,10 +663,9 @@
       }).then(function (esito) {
         // Ricliccando lo stesso link (stesso dispositivo) deve ritrovare questa prenotazione
         // invece di aprirne una vuota: serve salvare qui il token_personale, non solo offrirlo
-        // come link di riserva da copiare a mano.
-        if (esito.token_personale) {
-          localStorage.setItem('prenotazione_token_personale_' + urlToken, esito.token_personale);
-        }
+        // come link di riserva da copiare a mano. Si aggiunge alla lista (non sostituisce): con
+        // più prenotazioni fatte con lo stesso link (es. una wedding planner) le ritrova tutte.
+        aggiungiTokenPersonale(esito.token_personale);
         renderConferma(esito, riepilogoConferma(domande, risposte));
       }).catch(function (err) {
         errore.textContent = err.message;
@@ -633,7 +686,7 @@
         }).then(function (esito) {
           if (esito && esito.token_personale) {
             mioTokenPersonale = esito.token_personale;
-            localStorage.setItem('prenotazione_token_personale_' + urlToken, mioTokenPersonale);
+            aggiungiTokenPersonale(mioTokenPersonale);
           }
         }).catch(function () { /* silenzioso: il salvataggio bozza non deve interrompere la compilazione */ });
       }, 900);
@@ -827,7 +880,7 @@
     busta.appendChild(p1);
     box.appendChild(busta);
 
-    var tokenSalvato = esito.token_personale || localStorage.getItem('prenotazione_token_personale_' + urlToken);
+    var tokenSalvato = esito.token_personale;
     if (tokenSalvato) {
       var linkPersonale = location.origin + location.pathname + '?p=' + tokenSalvato;
       var riserva = el('div', { class: 'link-riserva' });
@@ -859,15 +912,6 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
 
     chiama('carica_prenotazione', { token_personale: tokenPersonale }).then(function (p) {
-      // Una prenotazione annullata ritrovata solo dalla cache del browser (non da un link
-      // personale ?p= condiviso apposta) non deve più bloccare il ritorno al modulo: la cliente sta
-      // riaprendo il link generico per prenotare di nuovo, non per rivedere quella vecchia
-      // richiesta. Il link personale esplicito invece la mostra comunque (è quello a cui punta).
-      if (p.stato_prenotazione === 'annullata' && !tokenPersonaleDaUrl && urlToken) {
-        localStorage.removeItem('prenotazione_token_personale_' + urlToken);
-        avviaModulo();
-        return;
-      }
       applicaTema(p.tema);
       if (p.stato_prenotazione === 'in_compilazione') {
         avviaModuloDaBozza(p);
@@ -881,6 +925,66 @@
     }).catch(function (err) {
       app.innerHTML = '';
       app.appendChild(testo('p', 'errore', err.message));
+    });
+  }
+
+  var STATO_PRENOTAZIONE_LABEL = {
+    confermata: 'Confermata',
+    annullata: 'Annullata',
+    in_compilazione: 'In compilazione',
+  };
+
+  // Elenco di tutte le prenotazioni fatte con questo link su questo dispositivo (2 o più): per chi,
+  // come una wedding planner, ne fa diverse. Ogni token non più valido (es. revocato
+  // dall'amministratrice) viene tolto silenziosamente dalla lista, non mostrato come errore.
+  function avviaElencoPrenotazioni(tokenList) {
+    app.innerHTML = '';
+    app.appendChild(testo('p', 'caricamento', 'Caricamento delle tue prenotazioni…'));
+
+    Promise.all(
+      tokenList.map(function (tok) {
+        return chiama('carica_prenotazione', { token_personale: tok })
+          .then(function (p) { return { tok: tok, p: p }; })
+          .catch(function () {
+            rimuoviTokenPersonale(tok);
+            return null;
+          });
+      })
+    ).then(function (risultati) {
+      var validi = risultati.filter(function (r) { return r !== null; });
+      applicaTema(validi.length > 0 ? validi[0].p.tema : null);
+      app.innerHTML = '';
+      app.appendChild(testo('h1', 'titolo-form', 'Le tue prenotazioni'));
+
+      if (validi.length === 0) {
+        app.appendChild(testo('p', 'istruzioni', 'Non risulta ancora nessuna prenotazione valida su questo dispositivo.'));
+      }
+
+      validi.forEach(function (r) {
+        var dataTrovata = null;
+        (r.p.risposte_cliente || []).some(function (risp) {
+          if (risp.tipo_campo === 'data' && typeof risp.risposta === 'string') {
+            dataTrovata = formattaDataConGiorno(risp.risposta);
+            return true;
+          }
+          return false;
+        });
+        var card = el('div', { class: 'card-prenotazione' });
+        card.appendChild(testo('div', 'card-codice', r.p.codice_prenotazione || r.p.titolo_link_snapshot || 'Prenotazione'));
+        if (dataTrovata) card.appendChild(testo('div', 'card-data', dataTrovata));
+        card.appendChild(testo('div', 'card-stato', STATO_PRENOTAZIONE_LABEL[r.p.stato_prenotazione] || r.p.stato_prenotazione));
+        card.onclick = function () {
+          tokenPersonale = r.tok;
+          avviaVistaPersonale();
+        };
+        app.appendChild(card);
+      });
+
+      var bottoneNuova = el('button', { class: 'pulsante' });
+      bottoneNuova.style.marginTop = '16px';
+      bottoneNuova.textContent = 'Fai una nuova prenotazione';
+      bottoneNuova.onclick = function () { avviaModulo(); };
+      app.appendChild(bottoneNuova);
     });
   }
 
@@ -898,6 +1002,23 @@
         el('span', { class: 'stella' }, [document.createTextNode('★')]),
       ]));
     }
+
+    // Sempre visibile (anche su una prenotazione annullata o di sola lettura): non deve mai essere
+    // un vicolo cieco, che si tratti di prenotare di nuovo o di rivedere le altre già fatte con
+    // questo stesso link (es. una wedding planner con più prenotazioni).
+    var azioniAltrePrenotazioni = el('div', { class: 'altre-prenotazioni' });
+    var bottoneNuova = el('button', { class: 'pulsante secondario' });
+    bottoneNuova.textContent = 'Fai una nuova prenotazione';
+    bottoneNuova.onclick = function () { avviaModulo(); };
+    azioniAltrePrenotazioni.appendChild(bottoneNuova);
+    if (leggiTokenPersonali().length > 1) {
+      var bottoneElenco = el('button', { class: 'pulsante secondario' });
+      bottoneElenco.textContent = 'Vedi tutte le tue prenotazioni';
+      bottoneElenco.style.marginTop = '8px';
+      bottoneElenco.onclick = function () { avviaElencoPrenotazioni(leggiTokenPersonali()); };
+      azioniAltrePrenotazioni.appendChild(bottoneElenco);
+    }
+    app.appendChild(azioniAltrePrenotazioni);
 
     if (p.stato_prenotazione === 'annullata') {
       app.appendChild(testo('p', 'errore', 'Questa prenotazione è stata annullata.'));
@@ -1006,10 +1127,26 @@
 
   // ============================================================
 
-  if (tokenPersonale) {
+  if (tokenPersonaleDaUrl) {
+    // Link personale esplicito (?p=...): apre sempre direttamente quella prenotazione, comprese
+    // le annullate — è il link "di riserva" condiviso apposta per quella prenotazione specifica.
+    tokenPersonale = tokenPersonaleDaUrl;
     avviaVistaPersonale();
   } else if (urlToken) {
-    avviaModulo();
+    var tokenSalvati = leggiTokenPersonali();
+    if (tokenSalvati.length === 1) {
+      // Comportamento invariato: un'unica prenotazione già fatta con questo link, si rientra
+      // direttamente lì (comprese le prenotazioni annullate, che ora offrono comunque un bottone
+      // "Fai una nuova prenotazione" invece di essere un vicolo cieco).
+      tokenPersonale = tokenSalvati[0];
+      avviaVistaPersonale();
+    } else if (tokenSalvati.length > 1) {
+      // Più prenotazioni fatte con lo stesso link su questo dispositivo (es. una wedding planner):
+      // elenco con la possibilità di rientrare in una qualsiasi o farne una nuova.
+      avviaElencoPrenotazioni(tokenSalvati);
+    } else {
+      avviaModulo();
+    }
   } else {
     app.innerHTML = '';
     app.appendChild(testo('p', 'errore', 'Link non valido.'));
