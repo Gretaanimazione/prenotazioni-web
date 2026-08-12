@@ -444,7 +444,11 @@
   // con eventuali link già condivisi nel vecchio formato.
   var segmentoPercorso = location.pathname.replace(/^\/+|\/+$/g, '');
   var urlToken = segmentoPercorso ? decodeURIComponent(segmentoPercorso) : params.get('token');
-  var tokenPersonale = params.get('p') || localStorage.getItem('prenotazione_token_personale_' + urlToken);
+  // Distingue un link personale esplicito (?p=... condiviso apposta per quella prenotazione) da un
+  // token ritrovato nella cache del browser (link generico riaperto): solo nel primo caso ha senso
+  // insistere su una prenotazione annullata, vedi avviaVistaPersonale più sotto.
+  var tokenPersonaleDaUrl = params.get('p');
+  var tokenPersonale = tokenPersonaleDaUrl || localStorage.getItem('prenotazione_token_personale_' + urlToken);
   var app = document.getElementById('app');
 
   var ICONE = {
@@ -855,6 +859,15 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
 
     chiama('carica_prenotazione', { token_personale: tokenPersonale }).then(function (p) {
+      // Una prenotazione annullata ritrovata solo dalla cache del browser (non da un link
+      // personale ?p= condiviso apposta) non deve più bloccare il ritorno al modulo: la cliente sta
+      // riaprendo il link generico per prenotare di nuovo, non per rivedere quella vecchia
+      // richiesta. Il link personale esplicito invece la mostra comunque (è quello a cui punta).
+      if (p.stato_prenotazione === 'annullata' && !tokenPersonaleDaUrl && urlToken) {
+        localStorage.removeItem('prenotazione_token_personale_' + urlToken);
+        avviaModulo();
+        return;
+      }
       applicaTema(p.tema);
       if (p.stato_prenotazione === 'in_compilazione') {
         avviaModuloDaBozza(p);
