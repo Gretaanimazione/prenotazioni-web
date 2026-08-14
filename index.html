@@ -589,6 +589,39 @@
     return e;
   }
 
+  // navigator.clipboard può mancare o essere bloccato (browser in-app di WhatsApp/Instagram,
+  // pagina non https, permesso negato): ripiega su un textarea temporaneo + execCommand('copy'),
+  // che funziona in molti più contesti pur essendo un'API deprecata.
+  function copiaNegliAppunti(testoDaCopiare) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(testoDaCopiare).catch(function () {
+        return copiaConExecCommand(testoDaCopiare);
+      });
+    }
+    return copiaConExecCommand(testoDaCopiare);
+  }
+
+  function copiaConExecCommand(testoDaCopiare) {
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = testoDaCopiare;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      var riuscito = false;
+      try {
+        riuscito = document.execCommand('copy');
+      } catch (e) {
+        riuscito = false;
+      }
+      document.body.removeChild(area);
+      if (riuscito) resolve();
+      else reject(new Error('copia non riuscita'));
+    });
+  }
+
   // Applica la base grafica scelta dall'amministratrice per questo link (o fissata sulla
   // prenotazione al momento della bozza/invio). 'compleanno_bimbi' è il tema di default, definito
   // in :root, quindi non richiede alcuna classe.
@@ -844,9 +877,12 @@
         var copiaDescrizione = el('button', { type: 'button', class: 'copia-descrizione' });
         copiaDescrizione.textContent = 'Copia';
         copiaDescrizione.onclick = function () {
-          navigator.clipboard.writeText(testoDaCopiare).then(function () {
+          copiaNegliAppunti(testoDaCopiare).then(function () {
             copiaDescrizione.textContent = 'Copiato ✓';
             setTimeout(function () { copiaDescrizione.textContent = 'Copia'; }, 2000);
+          }).catch(function () {
+            copiaDescrizione.textContent = 'Tieni premuto il testo sopra per copiarlo';
+            setTimeout(function () { copiaDescrizione.textContent = 'Copia'; }, 3000);
           });
         };
         wrapper.appendChild(copiaDescrizione);
