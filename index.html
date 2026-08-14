@@ -149,6 +149,18 @@
   .campo label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
   .campo .obbligatoria { color: var(--rosa); }
   .campo .descrizione { font-size: 12px; color: var(--testo-muto); margin-top: 4px; }
+  .campo .copia-descrizione {
+    display: block;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    color: var(--rosa-scura);
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+  }
 
   .campo-input-wrap { position: relative; }
   .campo-icona {
@@ -825,7 +837,21 @@
       }
     }
 
-    if (domanda.descrizione) wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
+    if (domanda.descrizione) {
+      wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
+      if (domanda.tipo_campo === 'note') {
+        var testoDaCopiare = domanda.descrizione;
+        var copiaDescrizione = el('button', { type: 'button', class: 'copia-descrizione' });
+        copiaDescrizione.textContent = 'Copia';
+        copiaDescrizione.onclick = function () {
+          navigator.clipboard.writeText(testoDaCopiare).then(function () {
+            copiaDescrizione.textContent = 'Copiato ✓';
+            setTimeout(function () { copiaDescrizione.textContent = 'Copia'; }, 2000);
+          });
+        };
+        wrapper.appendChild(copiaDescrizione);
+      }
+    }
     return wrapper;
   }
 
