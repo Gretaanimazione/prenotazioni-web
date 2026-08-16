@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&family=Cinzel+Decorative:wght@700;900&display=swap"
   rel="stylesheet"
 />
 <style>
@@ -75,6 +75,37 @@
     --globo5-a: #4a3a48; --globo5-b: #2e2430; /* prugna */
   }
 
+  /* ⚡ Harry Potter: pergamena chiara, bordeaux e oro (collaborazione Binario Magico Pub) */
+  body.tema-harry_potter {
+    --rosa-chiara: #f6ead0;
+    --rosa: #7a1f1f;
+    --rosa-scura: #5c1414;
+    --oro: #b8860b;
+    --menta: #2f4d3a;
+    --crema: #f6ecd6;
+    --superficie: #fdf8ea;
+    --testo: #3b2a1a;
+    --testo-muto: #8a7355;
+    --bordo: #e0cfa0;
+    --bordo-tratteggiato: #b8860b;
+    --danger: #a83232;
+    --bagliore-1: rgba(184, 134, 11, 0.18);
+    --bagliore-2: rgba(122, 31, 31, 0.1);
+    --globo1-a: #e8c874; --globo1-b: #b8860b; /* oro */
+    --globo2-a: #a83232; --globo2-b: #7a1f1f; /* bordeaux */
+    --globo3-a: #4a7a5a; --globo3-b: #2f4d3a; /* verde smeraldo */
+    --globo4-a: #d9c49a; --globo4-b: #b39866; /* pergamena scura */
+    --globo5-a: #6b5a8a; --globo5-b: #4a3d63; /* viola magico */
+  }
+  body.tema-harry_potter .decorazione-palloncini { display: none; }
+  body.tema-harry_potter .decorazione-magia { display: block; }
+  body.tema-harry_potter .titolo-form {
+    font-family: "Cinzel Decorative", serif;
+    font-size: 30px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -92,6 +123,7 @@
   .decorazione-palloncini { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-fiori { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-swirl { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-magia { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
   body.tema-intrattenimento_adulti .decorazione-palloncini { display: none; }
@@ -445,6 +477,46 @@
           <path d="M500 10 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.85" />
         </g>
       </svg>
+      <svg class="decorazione-magia" viewBox="0 0 1000 190" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <symbol id="gufoMagico" viewBox="0 0 60 70">
+            <ellipse cx="30" cy="48" rx="20" ry="22" fill="var(--menta)" />
+            <ellipse cx="14" cy="46" rx="7" ry="14" fill="var(--menta)" opacity="0.85" transform="rotate(-12 14 46)" />
+            <ellipse cx="46" cy="46" rx="7" ry="14" fill="var(--menta)" opacity="0.85" transform="rotate(12 46 46)" />
+            <circle cx="30" cy="22" r="16" fill="var(--menta)" />
+            <path d="M17,10 L22,20 L13,20 Z" fill="var(--menta)" />
+            <path d="M43,10 L38,20 L47,20 Z" fill="var(--menta)" />
+            <ellipse cx="30" cy="25" rx="14" ry="12" fill="var(--rosa-chiara)" />
+            <circle cx="22" cy="23" r="6.5" fill="#fffaf0" />
+            <circle cx="38" cy="23" r="6.5" fill="#fffaf0" />
+            <circle cx="22" cy="23" r="3.2" fill="var(--rosa-scura)" />
+            <circle cx="38" cy="23" r="3.2" fill="var(--rosa-scura)" />
+            <path d="M30,28 L26,34 L34,34 Z" fill="var(--oro)" />
+          </symbol>
+        </defs>
+
+        <use href="#gufoMagico" x="70" y="55" width="56" height="66" />
+        <use href="#gufoMagico" x="874" y="55" width="56" height="66" transform="scale(-1,1)" style="transform-origin: 902px 88px" />
+
+        <!-- cicatrice a fulmine, centrale -->
+        <path
+          d="M492,20 L508,20 L498,48 L512,48 L484,90 L494,55 L480,55 Z"
+          fill="var(--rosa-scura)"
+          stroke="var(--oro)"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+
+        <!-- stelline magiche -->
+        <g fill="var(--oro)">
+          <path d="M180 30 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.9" />
+          <path d="M800 40 l2.5 7 7 2.5 -7 2.5 -2.5 7 -2.5 -7 -7 -2.5 7 -2.5 z" opacity="0.85" />
+          <path d="M300 100 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" opacity="0.7" />
+          <path d="M700 110 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" opacity="0.7" />
+          <circle cx="230" cy="70" r="2.2" /><circle cx="760" cy="80" r="2.2" />
+          <circle cx="360" cy="35" r="1.8" /><circle cx="630" cy="30" r="1.8" />
+        </g>
+      </svg>
       <div class="logo-riquadro">
         <div class="logo-script">Greta<span class="cuore"> ♡</span></div>
         <span class="logo-sottotitolo">ANIMAZIONE E ALLESTIMENTI</span>
@@ -639,7 +711,7 @@
 
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
       applicaTema(link.tema);
-      chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
+      chiama('pacchetti_pubblici', { url_token: urlToken }).then(function (pacchetti) {
         renderModulo(link, pacchetti);
       }).catch(function () {
         renderModulo(link, []);
