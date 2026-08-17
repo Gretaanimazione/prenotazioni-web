@@ -783,7 +783,7 @@
         // come link di riserva da copiare a mano. Si aggiunge alla lista (non sostituisce): con
         // più prenotazioni fatte con lo stesso link (es. una wedding planner) le ritrova tutte.
         aggiungiTokenPersonale(esito.token_personale);
-        renderConferma(esito, riepilogoConferma(domande, risposte));
+        renderConferma(esito, riepilogoConferma(domande, risposte), link.nota_conferma);
       }).catch(function (err) {
         errore.textContent = err.message;
         bottone.disabled = false;
@@ -973,7 +973,7 @@
     ]);
   }
 
-  function renderConferma(esito, riepilogo) {
+  function renderConferma(esito, riepilogo, notaConferma) {
     app.innerHTML = '';
     var box = el('div', { class: 'schermata-conferma' });
     box.appendChild(testo('h1', 'titolo-serif', 'Prenotazione'));
@@ -1013,6 +1013,14 @@
     p1.appendChild(el('span', { class: 'enfasi' }, [document.createTextNode('Ricliccalo quando vuoi, tornerai alla tua prenotazione!')]));
     busta.appendChild(p1);
     box.appendChild(busta);
+
+    if (notaConferma) {
+      var notaBox = el('div', { class: 'box-busta' });
+      var notaTesto = el('p');
+      notaTesto.textContent = notaConferma;
+      notaBox.appendChild(notaTesto);
+      box.appendChild(notaBox);
+    }
 
     var tokenSalvato = esito.token_personale;
     if (tokenSalvato) {
