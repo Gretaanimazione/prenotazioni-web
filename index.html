@@ -730,6 +730,12 @@
   // ============================================================
 
   function avviaModulo() {
+    // Bug reale: senza questo azzeramento, chi ha già una prenotazione confermata e preme "Fai una
+    // nuova prenotazione" continuava a portarsi dietro il vecchio token_personale (ancora nella
+    // variabile globale) — il modulo appariva vuoto, ma all'invio veniva letto come modifica della
+    // prenotazione VECCHIA (già confermata, quindi "non modificabile") invece che come nuova
+    // prenotazione, bloccando l'invio senza un motivo comprensibile.
+    tokenPersonale = null;
     app.innerHTML = '';
     app.appendChild(testo('p', 'caricamento', 'Caricamento del modulo…'));
 
