@@ -1006,6 +1006,46 @@
       });
       selectPacchetto.onchange = function () { segna(selectPacchetto.value); };
       wrapper.appendChild(selectPacchetto);
+    } else if (domanda.tipo_campo === 'foto') {
+      var inputFoto = el('input', { type: 'file', accept: 'image/*' });
+      var statoFoto = testo('p', 'descrizione', 'Nessuna foto scelta.');
+      var erroreFoto = testo('p', 'errore', '');
+      inputFoto.onchange = function () {
+        var file = inputFoto.files && inputFoto.files[0];
+        if (!file) return;
+        erroreFoto.textContent = '';
+        if (!/^image\//.test(file.type)) {
+          erroreFoto.textContent = 'Scegli un file immagine (JPG, PNG, WEBP).';
+          inputFoto.value = '';
+          return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+          erroreFoto.textContent = 'Foto troppo grande: usa un\'immagine sotto gli 8 MB.';
+          inputFoto.value = '';
+          return;
+        }
+        statoFoto.textContent = 'Caricamento in corso…';
+        var reader = new FileReader();
+        reader.onload = function () {
+          var base64 = String(reader.result).split(',')[1] || '';
+          chiama('carica_foto_risposta', {
+            url_token: urlToken,
+            contenuto_base64: base64,
+            tipo_mime: file.type,
+          }).then(function (esito) {
+            statoFoto.textContent = 'Foto caricata: ' + file.name;
+            segna(esito.percorso);
+          }).catch(function (err) {
+            erroreFoto.textContent = err.message;
+            statoFoto.textContent = 'Nessuna foto scelta.';
+            inputFoto.value = '';
+          });
+        };
+        reader.readAsDataURL(file);
+      };
+      wrapper.appendChild(inputFoto);
+      wrapper.appendChild(statoFoto);
+      wrapper.appendChild(erroreFoto);
     } else if (domanda.tipo_campo === 'note') {
       var area = el('textarea', { placeholder: domanda.placeholder || '' });
       area.oninput = function () { segna(area.value); };
