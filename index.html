@@ -1366,6 +1366,56 @@
     sezioneBambini.appendChild(erroreBambini);
     app.appendChild(sezioneBambini);
 
+    // Ricevuta del bonifico: solo per chi ha scelto quel metodo di pagamento. Separata dal modulo
+    // principale perché spesso si paga DOPO aver prenotato — qui si può allegare (o sostituire) la
+    // ricevuta in qualsiasi momento, anche oltre la finestra dei 14gg di modifica diretta.
+    if (p.metodo_pagamento === 'Anticipato con bonifico') {
+      var sezioneRicevuta = el('div', { class: 'sezione' });
+      sezioneRicevuta.appendChild(testo('h2', 'titolo-form', 'Ricevuta del bonifico'));
+      sezioneRicevuta.appendChild(testo('p', 'istruzioni', p.ricevuta_bonifico_path
+        ? 'Ricevuta già allegata. Puoi caricarne un\'altra per sostituirla.'
+        : 'Quando hai effettuato il bonifico, allega qui la ricevuta.'));
+      var inputRicevuta = el('input', { type: 'file', accept: 'image/*' });
+      var statoRicevuta = testo('p', 'descrizione', p.ricevuta_bonifico_path ? 'Ricevuta allegata ✓' : 'Nessuna foto scelta.');
+      var erroreRicevuta = testo('p', 'errore', '');
+      inputRicevuta.onchange = function () {
+        var file = inputRicevuta.files && inputRicevuta.files[0];
+        if (!file) return;
+        erroreRicevuta.textContent = '';
+        if (!/^image\//.test(file.type)) {
+          erroreRicevuta.textContent = 'Scegli un file immagine (JPG, PNG, WEBP).';
+          inputRicevuta.value = '';
+          return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+          erroreRicevuta.textContent = 'Foto troppo grande: usa un\'immagine sotto gli 8 MB.';
+          inputRicevuta.value = '';
+          return;
+        }
+        statoRicevuta.textContent = 'Caricamento in corso…';
+        var reader = new FileReader();
+        reader.onload = function () {
+          var base64 = String(reader.result).split(',')[1] || '';
+          chiama('salva_ricevuta_bonifico', {
+            token_personale: tokenPersonale,
+            contenuto_base64: base64,
+            tipo_mime: file.type,
+          }).then(function () {
+            statoRicevuta.textContent = 'Ricevuta caricata: ' + file.name;
+          }).catch(function (err) {
+            erroreRicevuta.textContent = err.message;
+            statoRicevuta.textContent = 'Nessuna foto scelta.';
+            inputRicevuta.value = '';
+          });
+        };
+        reader.readAsDataURL(file);
+      };
+      sezioneRicevuta.appendChild(inputRicevuta);
+      sezioneRicevuta.appendChild(statoRicevuta);
+      sezioneRicevuta.appendChild(erroreRicevuta);
+      app.appendChild(sezioneRicevuta);
+    }
+
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
     var sezioneRichiesta = el('div', { class: 'sezione' });
     sezioneRichiesta.appendChild(testo('h2', 'titolo-form', 'Hai bisogno di cambiare qualcosa?'));
