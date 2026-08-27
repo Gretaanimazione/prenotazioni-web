@@ -410,8 +410,17 @@
 
   .chiusura-script { font-family: "Alex Brush", cursive; color: var(--rosa-scura); font-size: 30px; margin: 20px 0 0; }
 
-  .riga-dettaglio { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--bordo); text-align: left; }
-  .riga-dettaglio .valore { color: var(--testo-muto); text-align: right; }
+  .riga-dettaglio { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--bordo); text-align: left; }
+  .riga-dettaglio .valore { color: var(--testo-muto); text-align: right; flex: 1; }
+  .link-modifica { flex: none; background: none; border: none; padding: 0; color: var(--rosa-scura); font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .editor-inline { padding: 10px 0 16px; border-top: 1px dashed var(--bordo); }
+  .editor-inline input[type="text"], .editor-inline input[type="number"], .editor-inline select, .editor-inline textarea {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--bordo); font-size: 15px; font-family: inherit;
+  }
+  .editor-opzioni { display: flex; flex-direction: column; gap: 6px; }
+  .editor-opzioni label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .editor-azioni { display: flex; gap: 8px; margin-top: 10px; }
+  .editor-azioni .pulsante { width: auto; flex: 1; padding: 10px 14px; font-size: 14px; }
   .sezione { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--bordo); }
   .sezione .titolo-form { font-size: 24px; margin-bottom: 10px; }
   .piede { text-align: center; padding: 16px; color: var(--testo-muto); font-size: 12px; }
@@ -1331,8 +1340,95 @@
       return;
     }
 
+    // Campi che l'amministratrice ha reso modificabili dalla cliente (stessa whitelist di
+    // richiedi_modifica_prenotazione_cliente) — su richiesta di Greta, un tasto "Modifica" di
+    // fianco a ogni sezione modificabile, non solo il generico "Hai bisogno di cambiare
+    // qualcosa?" più sotto. Ogni modifica va comunque in approvazione (stessa richiesta già usata
+    // da quella sezione), non è un salvataggio diretto: la cliente non può cambiare da sola dati
+    // che l'amministratrice deve rivedere (es. l'importo).
+    var CHIAVI_MODIFICABILI_RICHIESTA = [
+      'tipo_evento', 'tipo_location', 'cliente', 'cliente_telefono', 'cliente_email',
+      'nome_festeggiato', 'indirizzo_evento', 'citta_evento', 'truccabimbi_o_tatuaggi',
+      'importo_da_riscuotere_cliente', 'anticipo_richiesto', 'outfit_richiesta_cliente',
+      'informazioni_da_sapere',
+    ];
+    var TIPI_CAMPO_EDITABILI_INLINE = [
+      'testo_libero', 'note', 'numerico', 'selezione_da_elenco', 'scelta_singola', 'scelta_multipla',
+    ];
+    var richiestaPendente = !!(p.richiesta_modifica_corrente && p.richiesta_modifica_corrente.stato === 'in_attesa');
+
+    function costruisceEditorInline(domandaOriginale, r, onSalva, onAnnulla) {
+      var editor = el('div', { class: 'editor-inline' });
+      var input;
+      var opzioni = (domandaOriginale && domandaOriginale.opzioni) || [];
+
+      if (r.tipo_campo === 'scelta_multipla') {
+        var selezionati = Array.isArray(r.risposta) ? r.risposta.slice() : [];
+        var box = el('div', { class: 'editor-opzioni' });
+        opzioni.forEach(function (op) {
+          var id = 'chk-' + r.domanda_id + '-' + op;
+          var check = el('input', { type: 'checkbox', id: id, value: op });
+          check.checked = selezionati.indexOf(op) !== -1;
+          check.onchange = function () {
+            selezionati = check.checked
+              ? selezionati.concat([op])
+              : selezionati.filter(function (v) { return v !== op; });
+          };
+          var label = el('label', { for: id }, [check, document.createTextNode(' ' + op)]);
+          box.appendChild(label);
+        });
+        editor.appendChild(box);
+        input = { leggiValore: function () { return selezionati; } };
+      } else if (r.tipo_campo === 'selezione_da_elenco' || r.tipo_campo === 'scelta_singola') {
+        var select = el('select', {});
+        opzioni.forEach(function (op) {
+          var opt = el('option', { value: op });
+          opt.textContent = op;
+          if (op === r.risposta) opt.selected = true;
+          select.appendChild(opt);
+        });
+        editor.appendChild(select);
+        input = { leggiValore: function () { return select.value; } };
+      } else if (r.tipo_campo === 'numerico') {
+        var numerico = el('input', { type: 'number', value: r.risposta != null ? r.risposta : '' });
+        editor.appendChild(numerico);
+        input = { leggiValore: function () { return numerico.value === '' ? null : Number(numerico.value); } };
+      } else if (r.tipo_campo === 'note') {
+        var area = el('textarea', {});
+        area.value = typeof r.risposta === 'string' ? r.risposta : '';
+        editor.appendChild(area);
+        input = { leggiValore: function () { return area.value; } };
+      } else {
+        var testoInput = el('input', { type: 'text', value: typeof r.risposta === 'string' ? r.risposta : '' });
+        editor.appendChild(testoInput);
+        input = { leggiValore: function () { return testoInput.value; } };
+      }
+
+      var erroreEditor = testo('p', 'errore', '');
+      var azioni = el('div', { class: 'editor-azioni' });
+      var bottoneSalva = el('button', { class: 'pulsante secondario' });
+      bottoneSalva.textContent = 'Invia richiesta';
+      bottoneSalva.onclick = function () {
+        bottoneSalva.disabled = true;
+        onSalva(input.leggiValore()).catch(function (err) {
+          erroreEditor.textContent = err.message;
+          bottoneSalva.disabled = false;
+        });
+      };
+      var bottoneAnnulla = el('button', { class: 'pulsante secondario' });
+      bottoneAnnulla.textContent = 'Annulla';
+      bottoneAnnulla.onclick = onAnnulla;
+      azioni.appendChild(bottoneSalva);
+      azioni.appendChild(bottoneAnnulla);
+      editor.appendChild(azioni);
+      editor.appendChild(erroreEditor);
+      return editor;
+    }
+
     var sezioneDettagli = el('div', { class: 'sezione' });
     (p.risposte_cliente || []).forEach(function (r) {
+      var domandaOriginale = (p.domande_snapshot || []).find(function (d) { return d.id === r.domanda_id; });
+      var contenitoreRiga = el('div', {});
       var riga = el('div', { class: 'riga-dettaglio' });
       riga.appendChild(testo('span', null, r.testo_domanda));
       var valoreTesto = r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
@@ -1342,9 +1438,38 @@
           : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
       var valore = testo('span', 'valore', valoreTesto);
       riga.appendChild(valore);
-      sezioneDettagli.appendChild(riga);
+
+      var puoModificare = !p.sola_lettura && !richiestaPendente
+        && CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1
+        && TIPI_CAMPO_EDITABILI_INLINE.indexOf(r.tipo_campo) !== -1;
+
+      if (puoModificare) {
+        var bottoneModifica = el('button', { class: 'link-modifica' });
+        bottoneModifica.textContent = 'Modifica';
+        bottoneModifica.onclick = function () {
+          var editor = costruisceEditorInline(domandaOriginale, r, function (nuovoValore) {
+            return chiama('richiedi_modifica', {
+              token_personale: tokenPersonale,
+              campi_richiesti: [{ campo: r.chiave_destinazione, valore_attuale: r.risposta, valore_richiesto: nuovoValore }],
+              nota_cliente: 'Modifica richiesta: "' + r.testo_domanda + '"',
+            }).then(function () { avviaVistaPersonale(); });
+          }, function () {
+            contenitoreRiga.removeChild(editor);
+            riga.style.display = '';
+          });
+          riga.style.display = 'none';
+          contenitoreRiga.appendChild(editor);
+        };
+        riga.appendChild(bottoneModifica);
+      }
+
+      contenitoreRiga.appendChild(riga);
+      sezioneDettagli.appendChild(contenitoreRiga);
     });
     app.appendChild(sezioneDettagli);
+    if (richiestaPendente) {
+      sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di modifica in attesa: potrai chiederne un\'altra dopo che sarà stata gestita.'));
+    }
 
     if (p.sola_lettura) {
       app.appendChild(testo('p', 'istruzioni', 'La modifica non è più disponibile per questo evento.'));
