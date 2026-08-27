@@ -880,6 +880,10 @@
         var soddisfatta = Array.isArray(valoreGate)
           ? valoreGate.indexOf(domanda.mostra_se_valore) !== -1
           : valoreGate === domanda.mostra_se_valore;
+        // mostra_se_negato inverte il confronto: la domanda compare quando il valore NON
+        // combacia, invece che quando combacia (es. nascondere "Trucca bimbi" solo quando è
+        // scelto un pacchetto specifico, mostrarla per tutti gli altri).
+        if (domanda.mostra_se_negato) soddisfatta = !soddisfatta;
         wrapper.style.display = soddisfatta ? '' : 'none';
         if (!soddisfatta) delete risposte[domanda.id];
       });
