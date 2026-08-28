@@ -1063,6 +1063,9 @@
       var area = el('textarea', { placeholder: domanda.placeholder || '' });
       area.oninput = function () { segna(area.value); };
       wrapper.appendChild(area);
+    } else if (domanda.tipo_campo === 'informativo') {
+      // Nessun campo dove scrivere: solo testo di sola lettura, con il pulsante "Copia" gestito
+      // più sotto insieme a quello di 'note'.
     } else if (domanda.tipo_campo === 'scelta_singola' && domanda.opzioni) {
       domanda.opzioni.forEach(function (opzione) {
         var riga = el('div', { class: 'opzioni-riga' });
@@ -1117,7 +1120,7 @@
 
     if (domanda.descrizione) {
       wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
-      if (domanda.tipo_campo === 'note') {
+      if (domanda.tipo_campo === 'note' || domanda.tipo_campo === 'informativo') {
         var testoDaCopiare = domanda.descrizione;
         var copiaDescrizione = el('button', { type: 'button', class: 'copia-descrizione' });
         copiaDescrizione.textContent = 'Copia';
