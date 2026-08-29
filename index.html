@@ -272,6 +272,31 @@
   }
   .campo .campo-input-wrap input { padding-left: 46px; }
   .campo textarea { min-height: 90px; resize: vertical; }
+  .suggerimenti-indirizzo {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    background: var(--superficie);
+    border: 1px solid var(--bordo);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .suggerimenti-indirizzo li {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--testo);
+    cursor: pointer;
+  }
+  .suggerimenti-indirizzo li:hover {
+    background: var(--rosa-chiara);
+  }
   /* Le icone native di data/ora restano scure di default: sui temi scuri diventerebbero
      invisibili sopra un campo altrettanto scuro. */
   body.tema-intrattenimento_adulti .campo input::-webkit-calendar-picker-indicator { filter: invert(0.85); }
@@ -784,6 +809,16 @@
     return e;
   }
 
+  // Suggerimenti indirizzo (Mapbox Geocoding, solo Italia): richiesto da Greta per far scegliere
+  // alla cliente un indirizzo verificato da un elenco invece di scriverlo a mano libera. Passa
+  // dalla Edge Function "prenota" (azione suggerimenti_indirizzo) invece di chiamare Mapbox da
+  // qui: il token resta lato server, non è un pk.* a scope pubblico sicuro da esporre nel client.
+  function suggerimentiIndirizzo(testoRicerca) {
+    return chiama('suggerimenti_indirizzo', { testo: testoRicerca }).then(function (corpo) {
+      return (corpo && corpo.suggerimenti) || [];
+    });
+  }
+
   // navigator.clipboard può mancare o essere bloccato (browser in-app di WhatsApp/Instagram,
   // pagina non https, permesso negato): ripiega su un textarea temporaneo + execCommand('copy'),
   // che funziona in molti più contesti pur essendo un'API deprecata.
@@ -1099,6 +1134,46 @@
       });
       select.onchange = function () { segna(select.value); };
       wrapper.appendChild(select);
+    } else if (domanda.chiave_destinazione === 'indirizzo_evento') {
+      var inputIndirizzo = el('input', { type: 'text', placeholder: domanda.placeholder || '', autocomplete: 'off' });
+      inputIndirizzo.oninput = function () { segna(inputIndirizzo.value); };
+      var listaSuggerimenti = el('ul', { class: 'suggerimenti-indirizzo' });
+      listaSuggerimenti.style.display = 'none';
+      var timerRicerca = null;
+      function nascondiSuggerimenti() { listaSuggerimenti.style.display = 'none'; listaSuggerimenti.innerHTML = ''; }
+      inputIndirizzo.oninput = function () {
+        segna(inputIndirizzo.value);
+        clearTimeout(timerRicerca);
+        var valore = inputIndirizzo.value.trim();
+        if (valore.length < 5) { nascondiSuggerimenti(); return; }
+        timerRicerca = setTimeout(function () {
+          suggerimentiIndirizzo(valore).then(function (suggerimenti) {
+            if (inputIndirizzo.value.trim() !== valore) return; // la cliente ha continuato a scrivere nel frattempo
+            listaSuggerimenti.innerHTML = '';
+            if (suggerimenti.length === 0) { nascondiSuggerimenti(); return; }
+            suggerimenti.forEach(function (indirizzo) {
+              var voce = el('li', {});
+              voce.textContent = indirizzo;
+              voce.onmousedown = function (ev) {
+                ev.preventDefault(); // evita che il blur dell'input nasconda la lista prima del click
+                inputIndirizzo.value = indirizzo;
+                segna(indirizzo);
+                nascondiSuggerimenti();
+              };
+              listaSuggerimenti.appendChild(voce);
+            });
+            listaSuggerimenti.style.display = 'block';
+          }).catch(function () { nascondiSuggerimenti(); });
+        }, 300);
+      };
+      inputIndirizzo.onblur = function () { setTimeout(nascondiSuggerimenti, 150); };
+      var iconaIndirizzo = iconaCampo(domanda);
+      var involucroIndirizzo = el('div', { class: 'campo-input-wrap' }, [
+        iconaIndirizzo ? el('span', { class: 'campo-icona', html: iconaIndirizzo }) : null,
+        inputIndirizzo,
+        listaSuggerimenti,
+      ]);
+      wrapper.appendChild(involucroIndirizzo);
     } else {
       var tipoInput = domanda.tipo_campo === 'numerico' ? 'number'
         : domanda.tipo_campo === 'data' ? 'date'
