@@ -921,13 +921,18 @@
         var wrapper = wrapperPerId[domanda.id];
         if (!wrapper) return;
         var valoreGate = risposte[domanda.mostra_se_domanda_id];
+        var gateRisposto = valoreGate !== undefined && valoreGate !== null && valoreGate !== '';
         var soddisfatta = Array.isArray(valoreGate)
           ? valoreGate.indexOf(domanda.mostra_se_valore) !== -1
           : valoreGate === domanda.mostra_se_valore;
         // mostra_se_negato inverte il confronto: la domanda compare quando il valore NON
         // combacia, invece che quando combacia (es. nascondere "Trucca bimbi" solo quando è
-        // scelto un pacchetto specifico, mostrarla per tutti gli altri).
-        if (domanda.mostra_se_negato) soddisfatta = !soddisfatta;
+        // scelto un pacchetto specifico, mostrarla per tutti gli altri). Richiede comunque che la
+        // domanda da cui dipende abbia già una risposta: altrimenti "nessuna risposta" soddisfa
+        // sempre la negazione e la domanda comparirebbe subito, prima ancora che la cliente
+        // scelga qualcosa (bug reale: "Allega la ricevuta del pagamento" appariva da subito,
+        // prima di scegliere il metodo di pagamento).
+        if (domanda.mostra_se_negato) soddisfatta = gateRisposto && !soddisfatta;
         wrapper.style.display = soddisfatta ? '' : 'none';
         if (!soddisfatta) delete risposte[domanda.id];
       });
