@@ -941,9 +941,34 @@
     var errore = testo('p', 'errore', '');
     app.appendChild(errore);
 
+    // Bug reale: la stellina rossa su un campo "obbligatoria" era solo decorativa, nulla
+    // impediva davvero di premere "Invia prenotazione" saltando il campo (es. l'indirizzo). Qui
+    // si controllano solo le domande attualmente VISIBILI: aggiornaVisibilitaCondizionali le
+    // nasconde già correttamente in base alle risposte date, quindi una domanda condizionale
+    // nascosta non blocca mai l'invio anche se è marcata obbligatoria.
+    function trovaObbligatoriaMancante() {
+      for (var i = 0; i < domande.length; i++) {
+        var d = domande[i];
+        if (!d.obbligatoria || d.tipo_campo === 'informativo') continue;
+        var wrapper = wrapperPerId[d.id];
+        if (wrapper && wrapper.style.display === 'none') continue;
+        var v = risposte[d.id];
+        var vuota = v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
+        if (vuota) return d;
+      }
+      return null;
+    }
+
     var bottone = el('button', { class: 'pulsante' });
     bottone.textContent = 'Invia prenotazione';
     bottone.onclick = function () {
+      var mancante = trovaObbligatoriaMancante();
+      if (mancante) {
+        errore.textContent = '"' + mancante.testo + '" è obbligatorio.';
+        var wrapperMancante = wrapperPerId[mancante.id];
+        if (wrapperMancante) wrapperMancante.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       bottone.disabled = true;
       errore.textContent = '';
       chiama('invia', {
