@@ -1574,6 +1574,49 @@
       contenitoreRiga.appendChild(riga);
       sezioneDettagli.appendChild(contenitoreRiga);
     });
+
+    // Se la cliente ha saltato una domanda (es. l'indirizzo) al momento della prenotazione, quel
+    // campo non ha nessuna riga sopra e quindi nessun tasto "Modifica" — l'unica strada restava la
+    // casella generica "Hai bisogno di cambiare qualcosa?" più sotto, che manda sempre e solo come
+    // informazioni_da_sapere, mai come vero indirizzo (bug reale: Paola, Vicomoscano, ha scritto lì
+    // l'indirizzo e Greta ha dovuto spostarlo a mano perché non risultava affidabile senza).
+    // Offerto solo se il link chiede davvero questo campo (chiave presente in domande_snapshot):
+    // sui link a location fissa (indirizzo_fisso sul link) la domanda non c'è proprio, niente da
+    // aggiungere.
+    if (!p.sola_lettura && !richiestaPendente) {
+      var chiaviChieste = (p.domande_snapshot || []).map(function (d) { return d.chiave_destinazione; });
+      var chiaviGiaRisposte = (p.risposte_cliente || []).map(function (r) { return r.chiave_destinazione; });
+      [
+        { chiave: 'indirizzo_evento', etichetta: 'Indirizzo dell\'evento' },
+        { chiave: 'citta_evento', etichetta: 'Città dell\'evento' },
+      ].forEach(function (campo) {
+        if (chiaviChieste.indexOf(campo.chiave) === -1) return;
+        if (chiaviGiaRisposte.indexOf(campo.chiave) !== -1) return;
+        var contenitoreRigaMancante = el('div', {});
+        var rigaMancante = el('div', { class: 'riga-dettaglio' });
+        rigaMancante.appendChild(testo('span', null, campo.etichetta + ' (non inserito)'));
+        var bottoneAggiungi = el('button', { class: 'link-modifica' });
+        bottoneAggiungi.textContent = 'Aggiungi';
+        bottoneAggiungi.onclick = function () {
+          var editor = costruisceEditorInline(null, { tipo_campo: 'testo_libero', risposta: '' }, function (nuovoValore) {
+            return chiama('richiedi_modifica', {
+              token_personale: tokenPersonale,
+              campi_richiesti: [{ campo: campo.chiave, valore_attuale: null, valore_richiesto: nuovoValore }],
+              nota_cliente: 'Aggiunta richiesta: "' + campo.etichetta + '"',
+            }).then(function () { avviaVistaPersonale(); });
+          }, function () {
+            contenitoreRigaMancante.removeChild(editor);
+            rigaMancante.style.display = '';
+          });
+          rigaMancante.style.display = 'none';
+          contenitoreRigaMancante.appendChild(editor);
+        };
+        rigaMancante.appendChild(bottoneAggiungi);
+        contenitoreRigaMancante.appendChild(rigaMancante);
+        sezioneDettagli.appendChild(contenitoreRigaMancante);
+      });
+    }
+
     app.appendChild(sezioneDettagli);
     if (richiestaPendente) {
       sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di modifica in attesa: potrai chiederne un\'altra dopo che sarà stata gestita.'));
