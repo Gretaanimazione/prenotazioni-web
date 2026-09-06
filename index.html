@@ -1758,6 +1758,90 @@
   }
 
   // ============================================================
+  // Recupero di una prenotazione già fatta quando il dispositivo non ha più nessun token salvato
+  // (es. dopo tanto tempo senza aprire il link — Safari e altri browser svuotano da soli i dati
+  // dei siti poco visitati — cache cancellata, telefono diverso, modalità privata). Prima di
+  // questa schermata, in questo caso si apriva dritto un modulo nuovo vuoto, senza nessun modo di
+  // ritrovare la prenotazione già fatta — bug reale segnalato da Greta. Cerca per telefono +
+  // cognome (o nome) insieme, mai per uno solo dei due, per non permettere di indovinare
+  // prenotazioni altrui provando numeri a caso.
+  // ============================================================
+
+  function avviaRecuperoPrenotazione() {
+    app.innerHTML = '';
+    app.appendChild(testo('h1', 'titolo-form', 'Hai già prenotato?'));
+    app.appendChild(testo('p', 'istruzioni', 'Se hai già fatto una prenotazione con questo link ma non la trovi più, inserisci qui sotto i dati che hai usato per ritrovarla.'));
+
+    var campoTelefono = el('div', { class: 'campo' });
+    var labelTelefono = el('label', {});
+    labelTelefono.textContent = 'Numero di telefono';
+    campoTelefono.appendChild(labelTelefono);
+    var inputTelefono = el('input', { type: 'tel', placeholder: 'Es. 333 1234567', autocomplete: 'tel' });
+    campoTelefono.appendChild(inputTelefono);
+    app.appendChild(campoTelefono);
+
+    var campoCognome = el('div', { class: 'campo' });
+    var labelCognome = el('label', {});
+    labelCognome.textContent = 'Cognome (o nome, come scritto nella prenotazione)';
+    campoCognome.appendChild(labelCognome);
+    var inputCognome = el('input', { type: 'text', placeholder: 'Es. Rossi', autocomplete: 'family-name' });
+    campoCognome.appendChild(inputCognome);
+    app.appendChild(campoCognome);
+
+    var messaggio = testo('p', 'errore', '');
+    messaggio.style.display = 'none';
+    app.appendChild(messaggio);
+
+    var bottoneCerca = el('button', { class: 'pulsante' });
+    bottoneCerca.textContent = 'Cerca la mia prenotazione';
+    bottoneCerca.onclick = function () {
+      var telefono = inputTelefono.value.trim();
+      var cognome = inputCognome.value.trim();
+      messaggio.style.display = 'none';
+      if (!telefono || !cognome) {
+        messaggio.textContent = 'Inserisci sia il telefono sia il cognome.';
+        messaggio.style.display = '';
+        return;
+      }
+      bottoneCerca.disabled = true;
+      bottoneCerca.textContent = 'Ricerca in corso…';
+      chiama('recupera_prenotazioni_per_telefono', {
+        url_token: urlToken,
+        telefono: telefono,
+        cognome: cognome,
+      }).then(function (risultati) {
+        risultati = risultati || [];
+        if (risultati.length === 0) {
+          bottoneCerca.disabled = false;
+          bottoneCerca.textContent = 'Cerca la mia prenotazione';
+          messaggio.textContent = 'Nessuna prenotazione trovata con questi dati. Controlla di aver scritto tutto giusto, oppure fanne una nuova qui sotto.';
+          messaggio.style.display = '';
+          return;
+        }
+        risultati.forEach(function (r) { aggiungiTokenPersonale(r.token_personale); });
+        if (risultati.length === 1) {
+          tokenPersonale = risultati[0].token_personale;
+          avviaVistaPersonale();
+        } else {
+          avviaElencoPrenotazioni(risultati.map(function (r) { return r.token_personale; }));
+        }
+      }).catch(function (err) {
+        bottoneCerca.disabled = false;
+        bottoneCerca.textContent = 'Cerca la mia prenotazione';
+        messaggio.textContent = err.message || 'Ricerca non riuscita.';
+        messaggio.style.display = '';
+      });
+    };
+    app.appendChild(bottoneCerca);
+
+    var bottoneNuova = el('button', { class: 'pulsante secondario' });
+    bottoneNuova.style.marginTop = '12px';
+    bottoneNuova.textContent = 'No, è la mia prima volta: fai una nuova prenotazione';
+    bottoneNuova.onclick = function () { avviaModulo(); };
+    app.appendChild(bottoneNuova);
+  }
+
+  // ============================================================
 
   if (tokenPersonaleDaUrl) {
     // Link personale esplicito (?p=...): apre sempre direttamente quella prenotazione, comprese
@@ -1777,7 +1861,9 @@
       // elenco con la possibilità di rientrare in una qualsiasi o farne una nuova.
       avviaElencoPrenotazioni(tokenSalvati);
     } else {
-      avviaModulo();
+      // Nessun token salvato: prima di aprire un modulo nuovo vuoto, offre la possibilità di
+      // ritrovare una prenotazione già fatta (il dispositivo può aver perso la memoria locale).
+      avviaRecuperoPrenotazione();
     }
   } else {
     app.innerHTML = '';
