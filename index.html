@@ -364,6 +364,20 @@
   .pulsante:disabled { opacity: 0.5; cursor: not-allowed; }
   .pulsante.secondario { background: var(--superficie); color: var(--testo); border: 1px solid var(--bordo); box-shadow: none; }
   .pulsante.pericolo { background: var(--danger); box-shadow: none; }
+  .pulsante-titolo {
+    display: block;
+    width: 100%;
+    padding: 26px 20px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--rosa), var(--rosa-scura));
+    color: #fff;
+    font-family: "Alex Brush", cursive;
+    font-size: 34px;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(214, 70, 123, 0.28);
+  }
   .errore { color: var(--danger); font-size: 14px; margin: 8px 0; }
   .avviso-bozza { font-size: 12px; color: var(--testo-muto); text-align: center; margin-top: 10px; }
 
@@ -1839,6 +1853,40 @@
   // prenotazioni altrui provando numeri a caso.
   // ============================================================
 
+  // Bug reale segnalato da Greta: quando non c'è nessun token salvato, la schermata mostrata
+  // direttamente (avviaRecuperoPrenotazione, form telefono+cognome) partiva prima di sapere il
+  // tema del link, quindi restava sempre nel tema rosa di default anche su un link a tema (es.
+  // Halloween). In più, voleva una scelta esplicita e ben visibile tra le due strade possibili,
+  // non un form di ricerca con la "nuova prenotazione" relegata a un bottone in fondo.
+  function avviaSceltaIniziale() {
+    app.innerHTML = '';
+    app.appendChild(testo('p', 'caricamento', 'Caricamento…'));
+    chiama('carica_link', { url_token: urlToken }).then(function (link) {
+      applicaTema(link.tema);
+      renderSceltaIniziale();
+    }).catch(function (err) {
+      app.innerHTML = '';
+      app.appendChild(testo('p', 'errore', err.message || 'Link non valido.'));
+    });
+  }
+
+  function renderSceltaIniziale() {
+    app.innerHTML = '';
+    var bottoneNuova = el('button', { class: 'pulsante-titolo' });
+    bottoneNuova.textContent = 'Fai una nuova prenotazione';
+    bottoneNuova.onclick = function () { avviaModulo(); };
+    app.appendChild(bottoneNuova);
+
+    var oppure = testo('p', 'istruzioni', 'Oppure, se hai già prenotato:');
+    oppure.style.margin = '24px 0 10px';
+    app.appendChild(oppure);
+
+    var bottoneCerca = el('button', { class: 'pulsante secondario' });
+    bottoneCerca.textContent = 'Cerca una prenotazione già effettuata per modificarla';
+    bottoneCerca.onclick = function () { avviaRecuperoPrenotazione(); };
+    app.appendChild(bottoneCerca);
+  }
+
   function avviaRecuperoPrenotazione() {
     app.innerHTML = '';
     app.appendChild(testo('h1', 'titolo-form', 'Hai già prenotato?'));
@@ -1933,9 +1981,9 @@
       // elenco con la possibilità di rientrare in una qualsiasi o farne una nuova.
       avviaElencoPrenotazioni(tokenSalvati);
     } else {
-      // Nessun token salvato: prima di aprire un modulo nuovo vuoto, offre la possibilità di
-      // ritrovare una prenotazione già fatta (il dispositivo può aver perso la memoria locale).
-      avviaRecuperoPrenotazione();
+      // Nessun token salvato: schermata di scelta iniziale (nuova prenotazione, oppure ritrovare
+      // una già fatta se il dispositivo ha perso la memoria locale) — a tema corretto.
+      avviaSceltaIniziale();
     }
   } else {
     app.innerHTML = '';
