@@ -1248,6 +1248,35 @@
     } else if (domanda.tipo_campo === 'informativo') {
       // Nessun campo dove scrivere: solo testo di sola lettura, con il pulsante "Copia" gestito
       // più sotto insieme a quello di 'note'.
+    } else if (domanda.tipo_campo === 'dati_bonifico') {
+      // Bug reale: prima questa domanda era di tipo 'note' (un riquadro vuoto inutile sopra il
+      // testo, con un unico "Copia" per tutto). Qui la descrizione è sempre nel formato
+      // "Intestazione: X · IBAN: Y · Causale: Z · <istruzione libera>": ogni pezzo "Etichetta: valore"
+      // diventa una riga con il proprio "Copia" (si copia un dato alla volta), il resto (istruzioni
+      // senza quel formato) resta testo semplice.
+      (domanda.descrizione || '').split(' · ').forEach(function (segmento) {
+        var indiceDuePunti = segmento.indexOf(': ');
+        if (indiceDuePunti === -1) {
+          wrapper.appendChild(testo('p', 'descrizione', segmento));
+          return;
+        }
+        var valoreSegmento = segmento.slice(indiceDuePunti + 2);
+        var rigaBonifico = el('div', { class: 'riga-dettaglio riga-bonifico' });
+        rigaBonifico.appendChild(testo('span', null, segmento));
+        var bottoneCopiaRiga = el('button', { type: 'button', class: 'copia-descrizione' });
+        bottoneCopiaRiga.textContent = 'Copia';
+        bottoneCopiaRiga.onclick = function () {
+          copiaNegliAppunti(valoreSegmento).then(function () {
+            bottoneCopiaRiga.textContent = 'Copiato ✓';
+            setTimeout(function () { bottoneCopiaRiga.textContent = 'Copia'; }, 2000);
+          }).catch(function () {
+            bottoneCopiaRiga.textContent = 'Tieni premuto per copiare';
+            setTimeout(function () { bottoneCopiaRiga.textContent = 'Copia'; }, 3000);
+          });
+        };
+        rigaBonifico.appendChild(bottoneCopiaRiga);
+        wrapper.appendChild(rigaBonifico);
+      });
     } else if (domanda.tipo_campo === 'scelta_singola' && domanda.opzioni) {
       domanda.opzioni.forEach(function (opzione) {
         var riga = el('div', { class: 'opzioni-riga' });
@@ -1340,7 +1369,7 @@
       }
     }
 
-    if (domanda.descrizione) {
+    if (domanda.descrizione && domanda.tipo_campo !== 'dati_bonifico') {
       wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
       if (domanda.tipo_campo === 'note' || domanda.tipo_campo === 'informativo') {
         var testoDaCopiare = domanda.descrizione;
