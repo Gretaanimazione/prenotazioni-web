@@ -155,6 +155,32 @@
   body.tema-natale .decorazione-palloncini { display: none; }
   body.tema-natale .decorazione-natale { display: block; }
 
+  /* 🎃 Halloween: notturno, viola e arancio zucca (pacchetti Halloween 2026 a piazze/comuni/locali) */
+  body.tema-halloween {
+    --rosa-chiara: #2b1f3d;
+    --rosa: #f07a1f;
+    --rosa-scura: #c85f12;
+    --oro: #ffb84d;
+    --menta: #6b3fa0;
+    --crema: #1a1025;
+    --superficie: #241834;
+    --testo: #f3e9f7;
+    --testo-muto: #b8a8c9;
+    --bordo: #3d2a52;
+    --bordo-tratteggiato: #f07a1f;
+    --danger: #ff6b6b;
+    --bagliore-1: rgba(240, 122, 31, 0.18);
+    --bagliore-2: rgba(107, 63, 160, 0.22);
+    --globo1-a: #ffcf7a; --globo1-b: #f07a1f; /* zucca arancio */
+    --globo2-a: #b98af0; --globo2-b: #6b3fa0; /* viola magia */
+    --globo3-a: #4a3a5c; --globo3-b: #241834; /* antracite viola */
+    --globo4-a: #8fe0a0; --globo4-b: #3aa35a; /* verde mostro */
+    --globo5-a: #f5a3c9; --globo5-b: #d9639a; /* fantasma rosa */
+  }
+  body.tema-halloween .decorazione-palloncini { display: none; }
+  body.tema-halloween .decorazione-halloween { display: block; }
+  body.tema-halloween .titolo-form::before { content: "🎃 "; }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -174,6 +200,7 @@
   .decorazione-swirl { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-magia { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-natale { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-halloween { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
   body.tema-intrattenimento_adulti .decorazione-palloncini { display: none; }
@@ -300,6 +327,7 @@
   /* Le icone native di data/ora restano scure di default: sui temi scuri diventerebbero
      invisibili sopra un campo altrettanto scuro. */
   body.tema-intrattenimento_adulti .campo input::-webkit-calendar-picker-indicator { filter: invert(0.85); }
+  body.tema-halloween .campo input::-webkit-calendar-picker-indicator { filter: invert(0.85); }
 
   .opzioni-riga { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .opzioni-riga input { width: auto; }
@@ -663,6 +691,50 @@
           <path d="M580 95 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" opacity="0.65" />
           <circle cx="360" cy="60" r="2.2" /><circle cx="640" cy="65" r="2.2" />
           <circle cx="470" cy="20" r="1.8" /><circle cx="530" cy="20" r="1.8" />
+        </g>
+      </svg>
+
+      <svg class="decorazione-halloween" viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="gHalloweenZucca" cx="35%" cy="28%" r="75%">
+            <stop offset="0%" style="stop-color: var(--globo1-a)" /><stop offset="100%" style="stop-color: var(--globo1-b)" />
+          </radialGradient>
+          <symbol id="zuccaHalloween" viewBox="0 0 90 76">
+            <path d="M42,10 C40,2 46,2 45,10" fill="none" stroke="var(--menta)" stroke-width="4" stroke-linecap="round" />
+            <ellipse cx="45" cy="46" rx="42" ry="28" fill="url(#gHalloweenZucca)" />
+            <path d="M45,18 L45,74" stroke="var(--globo1-b)" stroke-width="2" opacity="0.4" />
+            <path d="M18,20 L18,72" stroke="var(--globo1-b)" stroke-width="2" opacity="0.3" />
+            <path d="M72,20 L72,72" stroke="var(--globo1-b)" stroke-width="2" opacity="0.3" />
+            <path d="M25,38 L34,50 L16,50 Z" fill="var(--oro)" />
+            <path d="M65,38 L74,50 L56,50 Z" fill="var(--oro)" />
+            <path d="M20,58 Q45,72 70,58 L64,64 Q45,74 26,64 Z" fill="var(--oro)" />
+          </symbol>
+          <symbol id="pipistrelloHalloween" viewBox="0 0 60 30">
+            <path
+              d="M30,15 C24,2 10,2 0,10 C10,10 16,14 20,20 C10,18 2,22 0,28 C12,26 22,20 30,15 C38,20 48,26 60,28 C58,22 50,18 40,20 C44,14 50,10 60,10 C50,2 36,2 30,15 Z"
+              fill="var(--globo2-b)"
+              opacity="0.85"
+            />
+          </symbol>
+        </defs>
+
+        <use href="#zuccaHalloween" x="30" y="118" width="150" height="128" />
+        <use href="#zuccaHalloween" x="820" y="118" width="150" height="128" transform="scale(-1,1)" style="transform-origin: 895px 182px" />
+
+        <!-- luna crescente -->
+        <path d="M500,18 A26,26 0 1 0 522,60 A20,20 0 1 1 500,18 Z" fill="var(--oro)" opacity="0.85" />
+
+        <!-- pipistrelli in volo -->
+        <use href="#pipistrelloHalloween" x="150" y="20" width="46" height="23" />
+        <use href="#pipistrelloHalloween" x="230" y="48" width="34" height="17" opacity="0.8" />
+        <use href="#pipistrelloHalloween" x="740" y="24" width="42" height="21" transform="scale(-1,1)" style="transform-origin: 761px 34px" />
+        <use href="#pipistrelloHalloween" x="660" y="52" width="30" height="15" opacity="0.75" transform="scale(-1,1)" style="transform-origin: 675px 59px" />
+
+        <!-- stelline viola -->
+        <g fill="var(--globo2-a)">
+          <path d="M340 30 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.85" />
+          <path d="M660 90 l2.5 7 7 2.5 -7 2.5 -2.5 7 -2.5 -7 -7 -2.5 7 -2.5 z" opacity="0.75" />
+          <circle cx="420" cy="70" r="2.2" /><circle cx="600" cy="30" r="1.8" />
         </g>
       </svg>
       <div class="logo-riquadro">
