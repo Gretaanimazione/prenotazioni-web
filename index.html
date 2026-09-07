@@ -372,8 +372,9 @@
     border-radius: 20px;
     background: linear-gradient(135deg, var(--rosa), var(--rosa-scura));
     color: #fff;
-    font-family: "Alex Brush", cursive;
-    font-size: 34px;
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 800;
+    font-size: 22px;
     cursor: pointer;
     text-align: center;
     box-shadow: 0 6px 16px rgba(214, 70, 123, 0.28);
@@ -730,10 +731,26 @@
               opacity="0.85"
             />
           </symbol>
+          <symbol id="teschioHalloween" viewBox="0 0 50 50">
+            <path d="M25,4 C36,4 43,12 43,23 C43,29 40,33 37,36 L37,42 C37,45 34,47 31,47 L19,47 C16,47 13,45 13,42 L13,36 C10,33 7,29 7,23 C7,12 14,4 25,4 Z" fill="#efe6c8" />
+            <ellipse cx="17" cy="23" rx="5.5" ry="7" fill="var(--crema)" />
+            <ellipse cx="33" cy="23" rx="5.5" ry="7" fill="var(--crema)" />
+            <path d="M25,27 L22,34 L28,34 Z" fill="var(--crema)" />
+            <path d="M15,40 L15,47 M19,40 L19,47 M23,41 L23,47 M27,41 L27,47 M31,40 L31,47 M35,40 L35,47" stroke="var(--crema)" stroke-width="1.6" />
+          </symbol>
+          <symbol id="ragnoHalloween" viewBox="0 0 40 34">
+            <g stroke="var(--globo2-b)" stroke-width="2" fill="none" stroke-linecap="round">
+              <path d="M14,14 L2,6" /><path d="M14,18 L1,18" /><path d="M14,22 L3,29" /><path d="M15,11 L6,2" />
+              <path d="M26,14 L38,6" /><path d="M26,18 L39,18" /><path d="M26,22 L37,29" /><path d="M25,11 L34,2" />
+            </g>
+            <ellipse cx="20" cy="21" rx="8" ry="6.5" fill="var(--globo2-b)" />
+            <circle cx="20" cy="12" r="4.5" fill="var(--globo2-b)" />
+          </symbol>
         </defs>
 
-        <use href="#zuccaHalloween" x="30" y="118" width="150" height="128" />
-        <use href="#zuccaHalloween" x="820" y="118" width="150" height="128" transform="scale(-1,1)" style="transform-origin: 895px 182px" />
+        <!-- zucche grandi, dimensionate per stare intere dentro il riquadro (niente più tagli) -->
+        <use href="#zuccaHalloween" x="20" y="95" width="118" height="100" />
+        <use href="#zuccaHalloween" x="862" y="95" width="118" height="100" transform="scale(-1,1)" style="transform-origin: 921px 145px" />
 
         <!-- luna crescente -->
         <path d="M500,18 A26,26 0 1 0 522,60 A20,20 0 1 1 500,18 Z" fill="var(--oro)" opacity="0.85" />
@@ -743,6 +760,20 @@
         <use href="#pipistrelloHalloween" x="230" y="48" width="34" height="17" opacity="0.8" />
         <use href="#pipistrelloHalloween" x="740" y="24" width="42" height="21" transform="scale(-1,1)" style="transform-origin: 761px 34px" />
         <use href="#pipistrelloHalloween" x="660" y="52" width="30" height="15" opacity="0.75" transform="scale(-1,1)" style="transform-origin: 675px 59px" />
+
+        <!-- ragnetti appesi al filo -->
+        <line x1="380" y1="0" x2="380" y2="55" stroke="var(--globo2-b)" stroke-width="1.5" opacity="0.7" />
+        <use href="#ragnoHalloween" x="362" y="50" width="36" height="30" />
+        <line x1="615" y1="0" x2="615" y2="40" stroke="var(--globo2-b)" stroke-width="1.5" opacity="0.7" />
+        <use href="#ragnoHalloween" x="598" y="35" width="34" height="28" />
+
+        <!-- teschietti -->
+        <use href="#teschioHalloween" x="215" y="138" width="46" height="46" />
+        <use href="#teschioHalloween" x="732" y="140" width="44" height="44" />
+
+        <!-- zucchette piccole -->
+        <use href="#zuccaHalloween" x="435" y="160" width="50" height="42" />
+        <use href="#zuccaHalloween" x="555" y="164" width="42" height="35" />
 
         <!-- stelline viola -->
         <g fill="var(--globo2-a)">
