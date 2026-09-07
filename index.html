@@ -1580,7 +1580,78 @@
     var TIPI_CAMPO_EDITABILI_INLINE = [
       'testo_libero', 'note', 'numerico', 'selezione_da_elenco', 'scelta_singola', 'scelta_multipla',
     ];
-    var richiestaPendente = !!(p.richiesta_modifica_corrente && p.richiesta_modifica_corrente.stato === 'in_attesa');
+    var ETICHETTA_CAMPO_RICHIESTA = {
+      inizio_evento: 'data/orario dell\'evento', tipo_evento: 'tipo di evento',
+      tipo_location: 'tipo di location', cliente: 'nome di chi prenota',
+      cliente_telefono: 'telefono', cliente_email: 'email', nome_festeggiato: 'nome festeggiato/a',
+      indirizzo_evento: 'indirizzo', citta_evento: 'città', truccabimbi_o_tatuaggi: 'truccabimbi o tatuaggi',
+      importo_da_riscuotere_cliente: 'importo', anticipo_richiesto: 'anticipo',
+      outfit_richiesta_cliente: 'outfit', informazioni_da_sapere: 'informazioni da sapere',
+    };
+    // Bug reale (Amanda, 07/09): una sola richiesta in attesa bloccava TUTTE le altre modifiche,
+    // anche su campi scollegati. Ora si può avere più di una richiesta in attesa insieme, purché su
+    // campi diversi — quindi il blocco va calcolato per singolo campo, non più con un booleano
+    // unico per l'intera prenotazione.
+    var campiConRichiestaPendente = {};
+    (p.richieste_modifica_in_attesa || []).forEach(function (r) {
+      (r.campi_richiesti || []).forEach(function (c) { campiConRichiestaPendente[c.campo] = true; });
+    });
+    var etichetteRichiesteInAttesa = Object.keys(campiConRichiestaPendente).map(function (c) {
+      return ETICHETTA_CAMPO_RICHIESTA[c] || c;
+    });
+
+    // Editor dedicato data/ora: le domande "Data della festa"/"Inizio orario animazione" sono due
+    // risposte separate (chiave_destinazione data_evento/ora_evento) che non corrispondono a nessuna
+    // colonna reale — l'unica colonna vera è eventi.inizio_evento (timestamp completo). Prima di
+    // questo editor l'unica via per cambiare l'orario era la casella di testo libero in fondo alla
+    // pagina, che però manda tutto come nota (informazioni_da_sapere), mai come orario vero (bug
+    // reale: successo più volte, es. Vanessa De Maggio, Jessica Crippa, Federica Riccio). Ora, come
+    // per tutti gli altri campi, si modifica SOLO cliccando "Modifica" di fianco alla riga.
+    function costruisceEditorDataOra(valoreIniziale, onSalva, onAnnulla) {
+      var editor = el('div', { class: 'editor-inline' });
+      var d = valoreIniziale ? new Date(valoreIniziale) : null;
+      function due(n) { return n < 10 ? '0' + n : '' + n; }
+      var riga = el('div', { class: 'opzioni-riga' });
+      var inputData = el('input', { type: 'date' });
+      var inputOra = el('input', { type: 'time' });
+      if (d) {
+        inputData.value = d.getFullYear() + '-' + due(d.getMonth() + 1) + '-' + due(d.getDate());
+        inputOra.value = due(d.getHours()) + ':' + due(d.getMinutes());
+      }
+      riga.appendChild(inputData);
+      riga.appendChild(inputOra);
+      editor.appendChild(riga);
+
+      var erroreEditor = testo('p', 'errore', '');
+      var azioni = el('div', { class: 'editor-azioni' });
+      var bottoneSalva = el('button', { class: 'pulsante secondario' });
+      bottoneSalva.textContent = 'Invia richiesta';
+      bottoneSalva.onclick = function () {
+        if (!inputData.value || !inputOra.value) {
+          erroreEditor.textContent = 'Inserisci sia la data sia l\'orario.';
+          return;
+        }
+        var parti = inputData.value.split('-');
+        var oraParti = inputOra.value.split(':');
+        var nuovaData = new Date(
+          Number(parti[0]), Number(parti[1]) - 1, Number(parti[2]),
+          Number(oraParti[0]), Number(oraParti[1]), 0
+        );
+        bottoneSalva.disabled = true;
+        onSalva(nuovaData.toISOString()).catch(function (err) {
+          erroreEditor.textContent = err.message;
+          bottoneSalva.disabled = false;
+        });
+      };
+      var bottoneAnnulla = el('button', { class: 'pulsante secondario' });
+      bottoneAnnulla.textContent = 'Annulla';
+      bottoneAnnulla.onclick = onAnnulla;
+      azioni.appendChild(bottoneSalva);
+      azioni.appendChild(bottoneAnnulla);
+      editor.appendChild(azioni);
+      editor.appendChild(erroreEditor);
+      return editor;
+    }
 
     function costruisceEditorInline(domandaOriginale, r, onSalva, onAnnulla) {
       var editor = el('div', { class: 'editor-inline' });
@@ -1664,9 +1735,12 @@
       var valore = testo('span', 'valore', valoreTesto);
       riga.appendChild(valore);
 
-      var puoModificare = !p.sola_lettura && !richiestaPendente
+      var eDataOOra = r.chiave_destinazione === 'data_evento' || r.chiave_destinazione === 'ora_evento';
+
+      var puoModificare = !p.sola_lettura && !campiConRichiestaPendente[r.chiave_destinazione]
         && CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1
         && TIPI_CAMPO_EDITABILI_INLINE.indexOf(r.tipo_campo) !== -1;
+      var puoModificareDataOra = !p.sola_lettura && !campiConRichiestaPendente.inizio_evento && eDataOOra;
 
       if (puoModificare) {
         var bottoneModifica = el('button', { class: 'link-modifica' });
@@ -1686,6 +1760,26 @@
           contenitoreRiga.appendChild(editor);
         };
         riga.appendChild(bottoneModifica);
+      } else if (puoModificareDataOra) {
+        var bottoneModificaOra = el('button', { class: 'link-modifica' });
+        bottoneModificaOra.textContent = 'Modifica';
+        bottoneModificaOra.onclick = function () {
+          var editor = costruisceEditorDataOra(p.inizio_evento, function (nuovoISO) {
+            return chiama('richiedi_modifica', {
+              token_personale: tokenPersonale,
+              campi_richiesti: [{ campo: 'inizio_evento', valore_attuale: p.inizio_evento, valore_richiesto: nuovoISO }],
+              nota_cliente: 'Modifica richiesta: data/orario dell\'evento',
+            }).then(function () { avviaVistaPersonale(); });
+          }, function () {
+            contenitoreRiga.removeChild(editor);
+            riga.style.display = '';
+          });
+          riga.style.display = 'none';
+          contenitoreRiga.appendChild(editor);
+        };
+        riga.appendChild(bottoneModificaOra);
+      } else if (campiConRichiestaPendente[r.chiave_destinazione] || (eDataOOra && campiConRichiestaPendente.inizio_evento)) {
+        riga.appendChild(testo('span', 'istruzioni', 'Modifica in attesa'));
       }
 
       contenitoreRiga.appendChild(riga);
@@ -1700,7 +1794,7 @@
     // Offerto solo se il link chiede davvero questo campo (chiave presente in domande_snapshot):
     // sui link a location fissa (indirizzo_fisso sul link) la domanda non c'è proprio, niente da
     // aggiungere.
-    if (!p.sola_lettura && !richiestaPendente) {
+    if (!p.sola_lettura) {
       var chiaviChieste = (p.domande_snapshot || []).map(function (d) { return d.chiave_destinazione; });
       var chiaviGiaRisposte = (p.risposte_cliente || []).map(function (r) { return r.chiave_destinazione; });
       [
@@ -1709,6 +1803,7 @@
       ].forEach(function (campo) {
         if (chiaviChieste.indexOf(campo.chiave) === -1) return;
         if (chiaviGiaRisposte.indexOf(campo.chiave) !== -1) return;
+        if (campiConRichiestaPendente[campo.chiave]) return;
         var contenitoreRigaMancante = el('div', {});
         var rigaMancante = el('div', { class: 'riga-dettaglio' });
         rigaMancante.appendChild(testo('span', null, campo.etichetta + ' (non inserito)'));
@@ -1735,8 +1830,8 @@
     }
 
     app.appendChild(sezioneDettagli);
-    if (richiestaPendente) {
-      sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di modifica in attesa: potrai chiederne un\'altra dopo che sarà stata gestita.'));
+    if (etichetteRichiesteInAttesa.length > 0) {
+      sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai richieste di modifica in attesa su: ' + etichetteRichiesteInAttesa.join(', ') + '. Puoi comunque richiedere modifiche su altri campi.'));
     }
 
     if (p.sola_lettura) {
@@ -1816,8 +1911,9 @@
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
     var sezioneRichiesta = el('div', { class: 'sezione' });
     sezioneRichiesta.appendChild(testo('h2', 'titolo-form', 'Hai bisogno di cambiare qualcosa?'));
-    if (p.richiesta_modifica_corrente && p.richiesta_modifica_corrente.stato === 'in_attesa') {
-      sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di modifica in attesa di risposta.'));
+    sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Per data, orario, indirizzo o gli altri campi qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.'));
+    if (campiConRichiestaPendente.informazioni_da_sapere) {
+      sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di questo tipo in attesa di risposta.'));
     } else {
       var notaRichiesta = el('textarea', { placeholder: 'Scrivi qui cosa vorresti cambiare…' });
       sezioneRichiesta.appendChild(notaRichiesta);
