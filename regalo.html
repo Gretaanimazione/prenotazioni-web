@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blocca il tuo premio — Greta Animazione e Allestimenti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --cioccolato-scuro: #3e2723;
+    --cioccolato: #5c2e1f;
+    --crema: #fdf6ec;
+    --beige: #f1e3ce;
+    --beige-bordo: #dfc9a3;
+    --verde: #7cb342;
+    --verde-scuro: #33691e;
+    --superficie: #ffffff;
+    --errore: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+    color: var(--cioccolato-scuro);
+    background: var(--crema);
+  }
+  main {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 32px 20px 56px;
+  }
+  .intestazione {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .riga-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .logo-testo {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 38px;
+    color: var(--cioccolato-scuro);
+    letter-spacing: 1px;
+  }
+  .logo-palloncino { width: 30px; height: 42px; }
+  .logo-sottotitolo {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--cioccolato);
+    margin-top: 2px;
+  }
+  h1.titolo {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    text-align: center;
+    margin: 20px 0 8px;
+  }
+  p.sottotitolo {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--cioccolato);
+    margin: 0 0 24px;
+  }
+  .scheda {
+    background: var(--beige);
+    border-radius: 24px;
+    padding: 24px 20px;
+  }
+  label.etichetta {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 16px 0 6px;
+  }
+  label.etichetta:first-child { margin-top: 0; }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--superficie);
+    border: 1px solid var(--beige-bordo);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .campo svg { width: 20px; height: 20px; color: var(--cioccolato); flex: none; }
+  .campo input, .campo select {
+    border: none;
+    outline: none;
+    background: none;
+    font: inherit;
+    color: var(--cioccolato-scuro);
+    width: 100%;
+  }
+  .campo select { appearance: none; }
+  .riga-tipo {
+    display: flex;
+    gap: 8px;
+  }
+  .pillola {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 4px;
+    border-radius: 12px;
+    border: 1px solid var(--beige-bordo);
+    background: var(--superficie);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cioccolato-scuro);
+    cursor: pointer;
+  }
+  .pillola svg { width: 22px; height: 22px; }
+  .pillola.selezionata {
+    background: var(--cioccolato-scuro);
+    border-color: var(--cioccolato-scuro);
+    color: var(--crema);
+  }
+  .riga-consenso {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .riga-consenso input { margin-top: 3px; width: 18px; height: 18px; flex: none; }
+  .riga-consenso label { font-size: 13px; line-height: 1.5; color: var(--cioccolato-scuro); }
+  .riga-consenso a { color: var(--cioccolato-scuro); }
+  .errore-campo { color: var(--errore); font-size: 13px; margin-top: 4px; }
+  .pulsante {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: var(--verde);
+    color: var(--verde-scuro);
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .pulsante svg { width: 22px; height: 22px; }
+  .pulsante[disabled] { opacity: 0.6; cursor: default; }
+  .nota-piede {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--cioccolato);
+    margin-top: 16px;
+  }
+  .messaggio-errore {
+    text-align: center;
+    color: var(--errore);
+    font-size: 14px;
+    margin-top: 14px;
+  }
+  /* Schermata di conferma */
+  .conferma { text-align: center; }
+  .conferma-icona {
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--verde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .conferma-icona svg { width: 42px; height: 42px; color: var(--verde-scuro); }
+  .conferma h1 { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 26px; margin: 0 0 12px; }
+  .conferma p { font-size: 15px; line-height: 1.6; margin: 0 0 4px; }
+  .riga-whatsapp {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--superficie);
+    border: 1px solid var(--beige-bordo);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-top: 20px;
+    text-decoration: none;
+    color: var(--cioccolato-scuro);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .riga-whatsapp svg { width: 20px; height: 20px; flex: none; color: var(--cioccolato-scuro); }
+  .a-presto {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 18px;
+  }
+  .nel-frattempo { font-size: 13px; color: var(--cioccolato); margin: 28px 0 10px; }
+  .pulsante-instagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    background: var(--verde);
+    color: var(--verde-scuro);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .pulsante-instagram svg { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+<main id="app">
+  <p style="text-align:center; color: var(--cioccolato);">Caricamento…</p>
+</main>
+<script>
+(function () {
+  var API_URL = 'https://mvzxzynapaegqmhkfpqa.supabase.co/functions/v1/prenota';
+  var NUMERO_WHATSAPP_GRETA = '393496838756';
+  var URL_INSTAGRAM_GRETA = 'https://www.instagram.com/greta_animazione_allestimenti';
+  var segmenti = location.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  var token = segmenti.length > 1 ? decodeURIComponent(segmenti.slice(1).join('/')) : '';
+  var app = document.getElementById('app');
+
+  var MESI = [
+    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  ];
+
+  var ICONE = {
+    persona: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 19c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
+    whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.6.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.6.2 1 .1 1.4-.1.4-.2 1.5-.6 1.6-1.2.2-.6.2-1 .1-1.2-.1-.1-.2-.2-.4-.3Z"/></svg>',
+    busta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    calendario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/></svg>',
+    regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="9" rx="1.5"/><path d="M4 14h16M12 10v9"/><path d="M8.5 10c-1.7 0-2.4-2.8-.7-3.5C9.5 5.9 12 7 12 10"/><path d="M15.5 10c1.7 0 2.4-2.8.7-3.5C14.5 5.9 12 7 12 10"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4 10-10"/></svg>',
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>',
+    palloncino: '<svg viewBox="0 0 20 28" fill="none"><ellipse cx="10" cy="10" rx="9" ry="10" fill="#7CB342"/><path d="M10 20v6" stroke="#5C2E1F" stroke-width="1.4"/><path d="M8.5 20.5c1 .6 2 .6 3 0" stroke="#5C2E1F" stroke-width="1.2" fill="none"/></svg>',
+  };
+
+  function el(tag, attrs, filhos) {
+    var n = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (chiave) {
+      if (chiave === 'html') n.innerHTML = attrs[chiave];
+      else if (chiave === 'texto') n.textContent = attrs[chiave];
+      else n.setAttribute(chiave, attrs[chiave]);
+    });
+    (filhos || []).forEach(function (f) { if (f) n.appendChild(f); });
+    return n;
+  }
+
+  function campoConIcona(icona, tipo, placeholder) {
+    var input = el('input', { type: tipo, placeholder: placeholder });
+    var div = el('div', { class: 'campo' }, [
+      el('span', { html: ICONE[icona] }),
+      input,
+    ]);
+    return { div: div, input: input };
+  }
+
+  function chiama(azione, payload) {
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(Object.assign({ azione: azione }, payload)),
+    }).then(function (r) {
+      return r.json().then(function (corpo) {
+        if (!r.ok) throw new Error(corpo.errore || 'Si è verificato un problema, riprova.');
+        return corpo.dati;
+      });
+    });
+  }
+
+  function renderIntestazione() {
+    return el('div', { class: 'intestazione' }, [
+      el('div', { class: 'riga-logo' }, [
+        el('span', { class: 'logo-testo' }, [document.createTextNode('GRETA')]),
+        el('span', { class: 'logo-palloncino', html: ICONE.palloncino }),
+      ]),
+      el('span', { class: 'logo-sottotitolo' }, [document.createTextNode('ANIMAZIONI & ALLESTIMENTI')]),
+    ]);
+  }
+
+  function renderModulo() {
+    app.innerHTML = '';
+
+    var campoNome = campoConIcona('persona', 'text', 'Nome');
+    var campoWhatsapp = campoConIcona('whatsapp', 'tel', 'WhatsApp');
+    var campoEmail = campoConIcona('busta', 'email', 'Email');
+
+    var tipoSelezionato = null;
+    var pillole = ['bambino', 'bambina', 'adulto'].map(function (tipo) {
+      var etichette = { bambino: 'Bambino', bambina: 'Bambina', adulto: 'Adulto' };
+      var pillola = el('button', { type: 'button', class: 'pillola' }, [
+        el('span', { html: ICONE.persona }),
+        el('span', {}, [document.createTextNode(etichette[tipo])]),
+      ]);
+      pillola.addEventListener('click', function () {
+        tipoSelezionato = tipo;
+        pillole.forEach(function (p) { p.classList.remove('selezionata'); });
+        pillola.classList.add('selezionata');
+        erroreTipo.textContent = '';
+      });
+      return pillola;
+    });
+
+    var selectMese = el('select', {}, [
+      el('option', { value: '' }, [document.createTextNode('Seleziona il mese')]),
+    ].concat(MESI.map(function (nome, indice) {
+      return el('option', { value: String(indice + 1) }, [document.createTextNode(nome)]);
+    })));
+    var campoMese = el('div', { class: 'campo' }, [
+      el('span', { html: ICONE.calendario }),
+      selectMese,
+    ]);
+
+    var checkboxConsenso = el('input', { type: 'checkbox', id: 'consenso' });
+    var erroreNome = el('p', { class: 'errore-campo' });
+    var erroreWhatsapp = el('p', { class: 'errore-campo' });
+    var erroreTipo = el('p', { class: 'errore-campo' });
+    var erroreMese = el('p', { class: 'errore-campo' });
+    var erroreConsenso = el('p', { class: 'errore-campo' });
+    var messaggioGenerale = el('p', { class: 'messaggio-errore' });
+
+    var pulsanteInvia = el('button', { type: 'button', class: 'pulsante' }, [
+      el('span', { html: ICONE.regalo }),
+      el('span', {}, [document.createTextNode('BLOCCA IL MIO PREMIO')]),
+    ]);
+
+    pulsanteInvia.addEventListener('click', function () {
+      erroreNome.textContent = '';
+      erroreWhatsapp.textContent = '';
+      erroreTipo.textContent = '';
+      erroreMese.textContent = '';
+      erroreConsenso.textContent = '';
+      messaggioGenerale.textContent = '';
+
+      var nome = campoNome.input.value.trim();
+      var whatsapp = campoWhatsapp.input.value.trim();
+      var mese = selectMese.value;
+      var valido = true;
+
+      if (!nome) { erroreNome.textContent = 'Inserisci il nome.'; valido = false; }
+      if (!whatsapp) { erroreWhatsapp.textContent = 'Inserisci il numero WhatsApp.'; valido = false; }
+      if (!tipoSelezionato) { erroreTipo.textContent = 'Seleziona chi festeggia.'; valido = false; }
+      if (!mese) { erroreMese.textContent = 'Seleziona il mese di compleanno.'; valido = false; }
+      if (!checkboxConsenso.checked) {
+        erroreConsenso.textContent = "Devi accettare l'informativa privacy per continuare.";
+        valido = false;
+      }
+      if (!valido) return;
+
+      pulsanteInvia.setAttribute('disabled', 'disabled');
+      chiama('registra_contatto_raccolto', {
+        token: token,
+        nome: nome,
+        whatsapp: whatsapp,
+        email: campoEmail.input.value.trim() || null,
+        tipo_festeggiato: tipoSelezionato,
+        mese_compleanno: Number(mese),
+      })
+        .then(renderConferma)
+        .catch(function (errore) {
+          messaggioGenerale.textContent = errore.message;
+          pulsanteInvia.removeAttribute('disabled');
+        });
+    });
+
+    app.appendChild(renderIntestazione());
+    app.appendChild(el('h1', { class: 'titolo' }, [document.createTextNode('Blocca adesso il tuo premio!')]));
+    app.appendChild(el('p', { class: 'sottotitolo' }, [
+      document.createTextNode('Compila i dati e riceverai il catalogo e un omaggio speciale per il mese del compleanno.'),
+    ]));
+
+    var scheda = el('div', { class: 'scheda' });
+    scheda.appendChild(el('label', { class: 'etichetta' }, [document.createTextNode('Nome')]));
+    scheda.appendChild(campoNome.div);
+    scheda.appendChild(erroreNome);
+    scheda.appendChild(el('label', { class: 'etichetta' }, [document.createTextNode('WhatsApp')]));
+    scheda.appendChild(campoWhatsapp.div);
+    scheda.appendChild(erroreWhatsapp);
+    scheda.appendChild(el('label', { class: 'etichetta' }, [document.createTextNode('Email')]));
+    scheda.appendChild(campoEmail.div);
+    scheda.appendChild(el('label', { class: 'etichetta' }, [document.createTextNode('Chi festeggerà?')]));
+    scheda.appendChild(el('div', { class: 'riga-tipo' }, pillole));
+    scheda.appendChild(erroreTipo);
+    scheda.appendChild(el('label', { class: 'etichetta' }, [document.createTextNode('Mese del compleanno')]));
+    scheda.appendChild(campoMese);
+    scheda.appendChild(erroreMese);
+
+    var rigaConsenso = el('div', { class: 'riga-consenso' }, [
+      checkboxConsenso,
+      el('label', { for: 'consenso', html:
+        'Ho letto l\'<a href="privacy-contatti.html" target="_blank">informativa privacy</a> e ' +
+        'acconsento a essere contattato/a su WhatsApp per ricevere il catalogo e l\'omaggio ' +
+        'disponibile nel mese del compleanno.'
+      }),
+    ]);
+    scheda.appendChild(rigaConsenso);
+    scheda.appendChild(erroreConsenso);
+    scheda.appendChild(pulsanteInvia);
+    scheda.appendChild(messaggioGenerale);
+
+    app.appendChild(scheda);
+    app.appendChild(el('p', { class: 'nota-piede' }, [
+      document.createTextNode('Nessun costo e nessun obbligo di prenotazione.'),
+    ]));
+  }
+
+  function vCardGreta() {
+    var righe = [
+      'BEGIN:VCARD', 'VERSION:3.0',
+      'N:;Greta Animazione e Allestimenti;;;',
+      'FN:Greta Animazione e Allestimenti',
+      'TEL;TYPE=CELL:+' + NUMERO_WHATSAPP_GRETA,
+      'END:VCARD',
+    ];
+    return 'data:text/vcard;charset=utf-8,' + encodeURIComponent(righe.join('\n'));
+  }
+
+  function renderConferma() {
+    app.innerHTML = '';
+    app.appendChild(renderIntestazione());
+
+    var conferma = el('div', { class: 'conferma' });
+    conferma.appendChild(el('div', { class: 'conferma-icona' }, [el('span', { html: ICONE.check })]));
+    conferma.appendChild(el('h1', {}, [document.createTextNode('Complimenti!')]));
+    conferma.appendChild(el('p', { style: 'font-weight:700; font-size:17px;' }, [
+      document.createTextNode('Hai bloccato il tuo premio'),
+    ]));
+    conferma.appendChild(el('p', {}, [
+      document.createTextNode(
+        'Ti scriveremo direttamente su WhatsApp nel mese del compleanno per mostrarti gli omaggi disponibili.',
+      ),
+    ]));
+    conferma.appendChild(el('p', {}, [document.createTextNode('Potrai scegliere quello che preferisci!')]));
+
+    var rigaSalva = el('a', { href: vCardGreta(), download: 'Greta Animazione e Allestimenti.vcf', class: 'riga-whatsapp' }, [
+      el('span', { html: ICONE.calendario }),
+      el('span', {}, [document.createTextNode('Ricordati di salvare il nostro numero')]),
+      el('span', { html: ICONE.whatsapp }),
+    ]);
+    conferma.appendChild(rigaSalva);
+    conferma.appendChild(el('p', { class: 'a-presto' }, [document.createTextNode('A presto!')]));
+    conferma.appendChild(el('p', { class: 'nel-frattempo' }, [document.createTextNode('Nel frattempo, seguici su Instagram')]));
+    conferma.appendChild(el('a', { href: URL_INSTAGRAM_GRETA, target: '_blank', rel: 'noopener', class: 'pulsante-instagram' }, [
+      el('span', { html: ICONE.instagram }),
+      el('span', {}, [document.createTextNode('@greta_animazione_allestimenti')]),
+    ]));
+
+    app.appendChild(conferma);
+  }
+
+  if (!token) {
+    app.innerHTML = '';
+    app.appendChild(renderIntestazione());
+    app.appendChild(el('p', { class: 'messaggio-errore', style: 'margin-top:24px;' }, [
+      document.createTextNode('Codice QR non valido.'),
+    ]));
+    return;
+  }
+
+  renderModulo();
+})();
+</script>
+</body>
+</html>
