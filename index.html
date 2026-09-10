@@ -1966,19 +1966,27 @@
     }
     app.appendChild(sezioneRichiesta);
 
-    // Annullamento
+    // Annullamento: non è più immediato, va approvato dalla titolare — vedi
+    // supabase/migrations/20260910100000_richieste_annullamento_prenotazione_cliente.sql.
     var sezioneAnnulla = el('div', { class: 'sezione' });
-    var bottoneAnnulla = el('button', { class: 'pulsante pericolo' });
-    bottoneAnnulla.textContent = 'Annulla la mia prenotazione';
-    var erroreAnnulla = testo('p', 'errore', '');
-    bottoneAnnulla.onclick = function () {
-      if (!confirm('Vuoi davvero annullare questa prenotazione?')) return;
-      chiama('richiedi_annullamento', { token_personale: tokenPersonale })
-        .then(function () { location.reload(); })
-        .catch(function (err) { erroreAnnulla.textContent = err.message; });
-    };
-    sezioneAnnulla.appendChild(bottoneAnnulla);
-    sezioneAnnulla.appendChild(erroreAnnulla);
+    if (p.richiesta_annullamento_in_attesa) {
+      sezioneAnnulla.appendChild(testo('p', 'istruzioni', 'Hai già richiesto l\'annullamento di questa prenotazione: la titolare ti risponderà a breve.'));
+    } else {
+      var bottoneAnnulla = el('button', { class: 'pulsante pericolo' });
+      bottoneAnnulla.textContent = 'Richiedi l\'annullamento';
+      var erroreAnnulla = testo('p', 'errore', '');
+      bottoneAnnulla.onclick = function () {
+        if (!confirm('Vuoi richiedere l\'annullamento di questa prenotazione? La titolare dovrà confermarlo prima che sia effettivo.')) return;
+        chiama('richiedi_annullamento', { token_personale: tokenPersonale })
+          .then(function () {
+            bottoneAnnulla.textContent = 'Richiesta inviata ✓';
+            bottoneAnnulla.disabled = true;
+          })
+          .catch(function (err) { erroreAnnulla.textContent = err.message; });
+      };
+      sezioneAnnulla.appendChild(bottoneAnnulla);
+      sezioneAnnulla.appendChild(erroreAnnulla);
+    }
     app.appendChild(sezioneAnnulla);
   }
 
