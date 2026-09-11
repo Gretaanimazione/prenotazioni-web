@@ -1868,24 +1868,43 @@
       return;
     }
 
-    // Numero bambini
-    var sezioneBambini = el('div', { class: 'sezione' });
-    sezioneBambini.appendChild(testo('h2', 'titolo-form', 'Numero di bambini'));
-    var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
-    sezioneBambini.appendChild(inputBambini);
-    var salvaBambini = el('button', { class: 'pulsante secondario' });
-    salvaBambini.style.marginTop = '10px';
-    salvaBambini.textContent = p.numero_bambini_confermato_il ? 'Aggiorna numero' : 'Salva numero';
-    var erroreBambini = testo('p', 'errore', '');
-    salvaBambini.onclick = function () {
-      var azione = 'aggiorna_numero_bambini';
-      chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
-        .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
-        .catch(function (err) { erroreBambini.textContent = err.message; });
-    };
-    sezioneBambini.appendChild(salvaBambini);
-    sezioneBambini.appendChild(erroreBambini);
-    app.appendChild(sezioneBambini);
+    // Numero bambini. Negli ultimi 7 giorni prima dell'evento il backend rifiuta
+    // aggiorna_numero_bambini (bug reale segnalato da Greta: la cliente non riusciva più a
+    // salvare, e il messaggio d'errore rimandava a "la conferma definitiva" senza che questa
+    // pagina la offrisse mai) — in quella finestra va usata conferma_numero_bambini.
+    var eventoIniziato = false;
+    var finestraConfermaDefinitiva = false;
+    if (p.inizio_evento) {
+      var msInizioEvento = new Date(p.inizio_evento).getTime();
+      var msAdesso = Date.now();
+      eventoIniziato = msAdesso >= msInizioEvento;
+      finestraConfermaDefinitiva = !eventoIniziato && msAdesso >= msInizioEvento - 7 * 24 * 60 * 60 * 1000;
+    }
+
+    if (!eventoIniziato) {
+      var sezioneBambini = el('div', { class: 'sezione' });
+      sezioneBambini.appendChild(testo('h2', 'titolo-form', 'Numero di bambini'));
+      if (finestraConfermaDefinitiva) {
+        sezioneBambini.appendChild(testo('p', 'istruzioni', 'Mancano meno di 7 giorni all\'evento: questo è il numero definitivo, usato per l\'importo finale.'));
+      }
+      var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
+      sezioneBambini.appendChild(inputBambini);
+      var salvaBambini = el('button', { class: 'pulsante secondario' });
+      salvaBambini.style.marginTop = '10px';
+      salvaBambini.textContent = finestraConfermaDefinitiva
+        ? 'Conferma numero definitivo'
+        : (p.numero_bambini_confermato_il ? 'Aggiorna numero' : 'Salva numero');
+      var erroreBambini = testo('p', 'errore', '');
+      salvaBambini.onclick = function () {
+        var azione = finestraConfermaDefinitiva ? 'conferma_numero_bambini' : 'aggiorna_numero_bambini';
+        chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
+          .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
+          .catch(function (err) { erroreBambini.textContent = err.message; });
+      };
+      sezioneBambini.appendChild(salvaBambini);
+      sezioneBambini.appendChild(erroreBambini);
+      app.appendChild(sezioneBambini);
+    }
 
     // Ricevuta del bonifico: solo per chi ha scelto quel metodo di pagamento. Separata dal modulo
     // principale perché spesso si paga DOPO aver prenotato — qui si può allegare (o sostituire) la
