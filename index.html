@@ -1863,52 +1863,12 @@
       sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai richieste di modifica in attesa su: ' + etichetteRichiesteInAttesa.join(', ') + '. Puoi comunque richiedere modifiche su altri campi.'));
     }
 
-    if (p.sola_lettura) {
-      app.appendChild(testo('p', 'istruzioni', 'La modifica non è più disponibile per questo evento.'));
-      return;
-    }
-
-    // Numero bambini. Negli ultimi 7 giorni prima dell'evento il backend rifiuta
-    // aggiorna_numero_bambini (bug reale segnalato da Greta: la cliente non riusciva più a
-    // salvare, e il messaggio d'errore rimandava a "la conferma definitiva" senza che questa
-    // pagina la offrisse mai) — in quella finestra va usata conferma_numero_bambini.
-    var eventoIniziato = false;
-    var finestraConfermaDefinitiva = false;
-    if (p.inizio_evento) {
-      var msInizioEvento = new Date(p.inizio_evento).getTime();
-      var msAdesso = Date.now();
-      eventoIniziato = msAdesso >= msInizioEvento;
-      finestraConfermaDefinitiva = !eventoIniziato && msAdesso >= msInizioEvento - 7 * 24 * 60 * 60 * 1000;
-    }
-
-    if (!eventoIniziato) {
-      var sezioneBambini = el('div', { class: 'sezione' });
-      sezioneBambini.appendChild(testo('h2', 'titolo-form', 'Numero di bambini'));
-      if (finestraConfermaDefinitiva) {
-        sezioneBambini.appendChild(testo('p', 'istruzioni', 'Mancano meno di 7 giorni all\'evento: questo è il numero definitivo, usato per l\'importo finale.'));
-      }
-      var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
-      sezioneBambini.appendChild(inputBambini);
-      var salvaBambini = el('button', { class: 'pulsante secondario' });
-      salvaBambini.style.marginTop = '10px';
-      salvaBambini.textContent = finestraConfermaDefinitiva
-        ? 'Conferma numero definitivo'
-        : (p.numero_bambini_confermato_il ? 'Aggiorna numero' : 'Salva numero');
-      var erroreBambini = testo('p', 'errore', '');
-      salvaBambini.onclick = function () {
-        var azione = finestraConfermaDefinitiva ? 'conferma_numero_bambini' : 'aggiorna_numero_bambini';
-        chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
-          .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
-          .catch(function (err) { erroreBambini.textContent = err.message; });
-      };
-      sezioneBambini.appendChild(salvaBambini);
-      sezioneBambini.appendChild(erroreBambini);
-      app.appendChild(sezioneBambini);
-    }
-
     // Ricevuta del bonifico: solo per chi ha scelto quel metodo di pagamento. Separata dal modulo
     // principale perché spesso si paga DOPO aver prenotato — qui si può allegare (o sostituire) la
-    // ricevuta in qualsiasi momento, anche oltre la finestra dei 14gg di modifica diretta.
+    // ricevuta in qualsiasi momento, anche oltre la finestra dei 14gg di modifica diretta, e anche
+    // dopo l'evento (bug reale segnalato da Greta: una cliente non trovava più il pulsante perché
+    // questa sezione veniva saltata insieme al resto del form quando p.sola_lettura è vero — deve
+    // restare visibile anche a evento passato, va PRIMA di quel controllo, non dopo).
     if (p.metodo_pagamento === 'Anticipato con bonifico') {
       var sezioneRicevuta = el('div', { class: 'sezione' });
       sezioneRicevuta.appendChild(testo('h2', 'titolo-form', 'Ricevuta del bonifico'));
@@ -1954,6 +1914,49 @@
       sezioneRicevuta.appendChild(statoRicevuta);
       sezioneRicevuta.appendChild(erroreRicevuta);
       app.appendChild(sezioneRicevuta);
+    }
+
+    if (p.sola_lettura) {
+      app.appendChild(testo('p', 'istruzioni', 'La modifica non è più disponibile per questo evento.'));
+      return;
+    }
+
+    // Numero bambini. Negli ultimi 7 giorni prima dell'evento il backend rifiuta
+    // aggiorna_numero_bambini (bug reale segnalato da Greta: la cliente non riusciva più a
+    // salvare, e il messaggio d'errore rimandava a "la conferma definitiva" senza che questa
+    // pagina la offrisse mai) — in quella finestra va usata conferma_numero_bambini.
+    var eventoIniziato = false;
+    var finestraConfermaDefinitiva = false;
+    if (p.inizio_evento) {
+      var msInizioEvento = new Date(p.inizio_evento).getTime();
+      var msAdesso = Date.now();
+      eventoIniziato = msAdesso >= msInizioEvento;
+      finestraConfermaDefinitiva = !eventoIniziato && msAdesso >= msInizioEvento - 7 * 24 * 60 * 60 * 1000;
+    }
+
+    if (!eventoIniziato) {
+      var sezioneBambini = el('div', { class: 'sezione' });
+      sezioneBambini.appendChild(testo('h2', 'titolo-form', 'Numero di bambini'));
+      if (finestraConfermaDefinitiva) {
+        sezioneBambini.appendChild(testo('p', 'istruzioni', 'Mancano meno di 7 giorni all\'evento: questo è il numero definitivo, usato per l\'importo finale.'));
+      }
+      var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
+      sezioneBambini.appendChild(inputBambini);
+      var salvaBambini = el('button', { class: 'pulsante secondario' });
+      salvaBambini.style.marginTop = '10px';
+      salvaBambini.textContent = finestraConfermaDefinitiva
+        ? 'Conferma numero definitivo'
+        : (p.numero_bambini_confermato_il ? 'Aggiorna numero' : 'Salva numero');
+      var erroreBambini = testo('p', 'errore', '');
+      salvaBambini.onclick = function () {
+        var azione = finestraConfermaDefinitiva ? 'conferma_numero_bambini' : 'aggiorna_numero_bambini';
+        chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
+          .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
+          .catch(function (err) { erroreBambini.textContent = err.message; });
+      };
+      sezioneBambini.appendChild(salvaBambini);
+      sezioneBambini.appendChild(erroreBambini);
+      app.appendChild(sezioneBambini);
     }
 
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
