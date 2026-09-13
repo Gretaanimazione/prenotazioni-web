@@ -1604,7 +1604,7 @@
       'tipo_evento', 'tipo_location', 'cliente', 'cliente_telefono', 'cliente_email',
       'nome_festeggiato', 'indirizzo_evento', 'citta_evento', 'truccabimbi_o_tatuaggi',
       'importo_da_riscuotere_cliente', 'anticipo_richiesto', 'outfit_richiesta_cliente',
-      'informazioni_da_sapere',
+      'informazioni_da_sapere', 'eta_festeggiato', 'metodo_pagamento', 'extra_scelti',
     ];
     var TIPI_CAMPO_EDITABILI_INLINE = [
       'testo_libero', 'note', 'numerico', 'selezione_da_elenco', 'scelta_singola', 'scelta_multipla',
@@ -1616,6 +1616,8 @@
       indirizzo_evento: 'indirizzo', citta_evento: 'città', truccabimbi_o_tatuaggi: 'truccabimbi o tatuaggi',
       importo_da_riscuotere_cliente: 'importo', anticipo_richiesto: 'anticipo',
       outfit_richiesta_cliente: 'outfit', informazioni_da_sapere: 'informazioni da sapere',
+      eta_festeggiato: 'età del festeggiato/a', metodo_pagamento: 'metodo di pagamento',
+      extra_scelti: 'extra scelti',
     };
     // Bug reale (Amanda, 07/09): una sola richiesta in attesa bloccava TUTTE le altre modifiche,
     // anche su campi scollegati. Ora si può avere più di una richiesta in attesa insieme, purché su
@@ -1863,18 +1865,21 @@
       sezioneDettagli.appendChild(testo('p', 'istruzioni', 'Hai richieste di modifica in attesa su: ' + etichetteRichiesteInAttesa.join(', ') + '. Puoi comunque richiedere modifiche su altri campi.'));
     }
 
-    // Ricevuta del bonifico: solo per chi ha scelto quel metodo di pagamento. Separata dal modulo
-    // principale perché spesso si paga DOPO aver prenotato — qui si può allegare (o sostituire) la
-    // ricevuta in qualsiasi momento, anche oltre la finestra dei 14gg di modifica diretta, e anche
-    // dopo l'evento (bug reale segnalato da Greta: una cliente non trovava più il pulsante perché
-    // questa sezione veniva saltata insieme al resto del form quando p.sola_lettura è vero — deve
-    // restare visibile anche a evento passato, va PRIMA di quel controllo, non dopo).
-    if (p.metodo_pagamento === 'Anticipato con bonifico') {
+    // Ricevuta del pagamento: per chi ha scelto un metodo "Anticipato con ..." (bonifico, PayPal,
+    // Satispay, Postepay — non per "Contanti il giorno stesso", che si paga di persona). Separata
+    // dal modulo principale perché spesso si paga DOPO aver prenotato — qui si può allegare (o
+    // sostituire) la ricevuta in qualsiasi momento, anche oltre la finestra dei 14gg di modifica
+    // diretta, e anche dopo l'evento (bug reale segnalato da Greta: una cliente non trovava più il
+    // pulsante perché questa sezione veniva saltata insieme al resto del form quando p.sola_lettura
+    // è vero — deve restare visibile anche a evento passato, va PRIMA di quel controllo, non dopo).
+    // Bug reale segnalato da Greta: era condizionata al solo bonifico, quindi una cliente che aveva
+    // scelto PayPal non trovava alcun modo di allegare la prova di pagamento.
+    if (p.metodo_pagamento && p.metodo_pagamento.indexOf('Anticipato con') === 0) {
       var sezioneRicevuta = el('div', { class: 'sezione' });
-      sezioneRicevuta.appendChild(testo('h2', 'titolo-form', 'Ricevuta del bonifico'));
+      sezioneRicevuta.appendChild(testo('h2', 'titolo-form', 'Ricevuta del pagamento'));
       sezioneRicevuta.appendChild(testo('p', 'istruzioni', p.ricevuta_bonifico_path
         ? 'Ricevuta già allegata. Puoi caricarne un\'altra per sostituirla.'
-        : 'Quando hai effettuato il bonifico, allega qui la ricevuta.'));
+        : 'Quando hai effettuato il pagamento, allega qui la ricevuta (screenshot va bene).'));
       var inputRicevuta = el('input', { type: 'file', accept: 'image/*' });
       var statoRicevuta = testo('p', 'descrizione', p.ricevuta_bonifico_path ? 'Ricevuta allegata ✓' : 'Nessuna foto scelta.');
       var erroreRicevuta = testo('p', 'errore', '');
