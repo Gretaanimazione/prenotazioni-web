@@ -1945,6 +1945,26 @@
       if (finestraConfermaDefinitiva) {
         sezioneBambini.appendChild(testo('p', 'istruzioni', 'Mancano meno di 7 giorni all\'evento: questo è il numero definitivo, usato per l\'importo finale.'));
       }
+      // Riscontro persistente (bug reale segnalato da Greta, Rossella 19/09): il tasto tornava
+      // sempre alla scritta di partenza a ogni ricaricamento della pagina, senza mai dire se il
+      // numero era già stato salvato — la cliente non aveva modo di saperlo e ripremeva più volte
+      // "Conferma" pensando che non avesse funzionato. Questa riga mostra sempre l'ultimo numero
+      // davvero salvato, ed è aggiornata subito dopo ogni salvataggio riuscito senza aspettare un
+      // ricaricamento della pagina.
+      function testoStatoBambini(numero, confermatoIl) {
+        if (confermatoIl) {
+          var d = new Date(confermatoIl);
+          var quando = isNaN(d.getTime()) ? '' : d.toLocaleString('it-IT', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+          return 'Numero confermato: ' + numero + ' bambini' + (quando ? ' (il ' + quando + ')' : '') + '.';
+        }
+        if (numero) {
+          return 'Numero indicato finora: ' + numero + ' bambini (non ancora confermato in modo definitivo).';
+        }
+        return 'Non hai ancora indicato il numero di bambini.';
+      }
+      var statoBambini = testo('p', 'istruzioni', testoStatoBambini(p.numero_bambini, p.numero_bambini_confermato_il));
+      statoBambini.style.fontWeight = 'bold';
+      sezioneBambini.appendChild(statoBambini);
       var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
       sezioneBambini.appendChild(inputBambini);
       var salvaBambini = el('button', { class: 'pulsante secondario' });
@@ -1955,8 +1975,15 @@
       var erroreBambini = testo('p', 'errore', '');
       salvaBambini.onclick = function () {
         var azione = finestraConfermaDefinitiva ? 'conferma_numero_bambini' : 'aggiorna_numero_bambini';
-        chiama(azione, { token_personale: tokenPersonale, numero_bambini: Number(inputBambini.value) })
-          .then(function () { salvaBambini.textContent = 'Salvato ✓'; })
+        var numeroInviato = Number(inputBambini.value);
+        chiama(azione, { token_personale: tokenPersonale, numero_bambini: numeroInviato })
+          .then(function () {
+            salvaBambini.textContent = 'Salvato ✓';
+            var adesso = new Date().toISOString();
+            p.numero_bambini = numeroInviato;
+            if (finestraConfermaDefinitiva) p.numero_bambini_confermato_il = adesso;
+            statoBambini.textContent = testoStatoBambini(numeroInviato, finestraConfermaDefinitiva ? adesso : p.numero_bambini_confermato_il);
+          })
           .catch(function (err) { erroreBambini.textContent = err.message; });
       };
       sezioneBambini.appendChild(salvaBambini);
