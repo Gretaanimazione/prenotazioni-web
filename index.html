@@ -1965,7 +1965,18 @@
       var statoBambini = testo('p', 'istruzioni', testoStatoBambini(p.numero_bambini, p.numero_bambini_confermato_il));
       statoBambini.style.fontWeight = 'bold';
       sezioneBambini.appendChild(statoBambini);
-      var inputBambini = el('input', { type: 'number', value: p.numero_bambini || '' });
+      // Se eventi.numero_bambini è ancora vuoto (non confermato/aggiornato nemmeno una volta), il
+      // campo restava vuoto anche se la cliente aveva già indicato un numero nel questionario
+      // iniziale — bug reale segnalato da Greta: la cliente vedeva la casella bianca, pensava di
+      // dover confermare così com'era e premeva subito il tasto, salvando 0.
+      var numeroBambiniOriginale = null;
+      (p.risposte_cliente || []).forEach(function (r) {
+        if (r.chiave_destinazione === 'numero_bambini' && r.risposta) {
+          numeroBambiniOriginale = Number(r.risposta);
+        }
+      });
+      var numeroBambiniPrecompilato = p.numero_bambini || numeroBambiniOriginale;
+      var inputBambini = el('input', { type: 'number', value: numeroBambiniPrecompilato || '' });
       sezioneBambini.appendChild(inputBambini);
       var salvaBambini = el('button', { class: 'pulsante secondario' });
       salvaBambini.style.marginTop = '10px';
@@ -1976,6 +1987,10 @@
       salvaBambini.onclick = function () {
         var azione = finestraConfermaDefinitiva ? 'conferma_numero_bambini' : 'aggiorna_numero_bambini';
         var numeroInviato = Number(inputBambini.value);
+        if (!inputBambini.value || !isFinite(numeroInviato) || numeroInviato <= 0) {
+          erroreBambini.textContent = 'Inserisci il numero di bambini prima di salvare.';
+          return;
+        }
         chiama(azione, { token_personale: tokenPersonale, numero_bambini: numeroInviato })
           .then(function () {
             salvaBambini.textContent = 'Salvato ✓';
