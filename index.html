@@ -258,6 +258,8 @@
   .campo label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
   .campo .obbligatoria { color: var(--rosa); }
   .campo .descrizione { font-size: 12px; color: var(--testo-muto); margin-top: 4px; }
+  .campo .etichetta-gruppo-pacchetti { font-weight: 600; font-size: 13px; margin: 12px 0 6px; }
+  .campo .etichetta-gruppo-pacchetti:first-of-type { margin-top: 0; }
   .campo .copia-descrizione {
     display: block;
     margin-top: 6px;
@@ -1221,6 +1223,41 @@
       });
       selectPacchetto.onchange = function () { segna(selectPacchetto.value); };
       wrapper.appendChild(selectPacchetto);
+    } else if (domanda.tipo_campo === 'pacchetti_multipli') {
+      // Come 'pacchetto' ma a scelta multipla (checkbox): niente calcolo prezzo automatico per
+      // una combinazione libera di pacchetti, il preventivo lo compone Greta a mano — richiesto
+      // per il link Natale Enti, dove un ente può voler unire più pacchetti nello stesso evento.
+      // Salva i NOMI scelti (non gli id), come per gli extra a scelta multipla: più leggibile per
+      // Greta nella prenotazione, e non richiede nessuna risoluzione id→nome altrove.
+      var selezionatePacchetti = [];
+      var gruppiPacchettiMultipli = {};
+      var ordineGruppiMultipli = [];
+      pacchetti.forEach(function (p) {
+        var chiaveGruppo = p.gruppo_pubblico || '';
+        if (!gruppiPacchettiMultipli[chiaveGruppo]) {
+          gruppiPacchettiMultipli[chiaveGruppo] = [];
+          ordineGruppiMultipli.push(chiaveGruppo);
+        }
+        gruppiPacchettiMultipli[chiaveGruppo].push(p);
+      });
+      ordineGruppiMultipli.forEach(function (chiaveGruppo) {
+        if (chiaveGruppo) {
+          var titoloGruppo = testo('p', 'etichetta-gruppo-pacchetti', chiaveGruppo);
+          wrapper.appendChild(titoloGruppo);
+        }
+        gruppiPacchettiMultipli[chiaveGruppo].forEach(function (p) {
+          var rigaPacchetto = el('div', { class: 'opzioni-riga' });
+          var inputPacchetto = el('input', { type: 'checkbox' });
+          inputPacchetto.onchange = function () {
+            if (inputPacchetto.checked) selezionatePacchetti.push(p.nome);
+            else selezionatePacchetti = selezionatePacchetti.filter(function (n) { return n !== p.nome; });
+            segna(selezionatePacchetti.slice());
+          };
+          rigaPacchetto.appendChild(inputPacchetto);
+          rigaPacchetto.appendChild(testo('span', null, p.nome));
+          wrapper.appendChild(rigaPacchetto);
+        });
+      });
     } else if (domanda.tipo_campo === 'foto') {
       var inputFoto = el('input', { type: 'file', accept: 'image/*' });
       var statoFoto = testo('p', 'descrizione', 'Nessuna foto scelta.');
