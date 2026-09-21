@@ -1194,10 +1194,30 @@
     if (domanda.tipo_campo === 'pacchetto') {
       var selectPacchetto = el('select', {});
       selectPacchetto.appendChild(el('option', { value: '' }));
+      // gruppo_pubblico (facoltativo, es. "Pacchetti piccole dimensioni"): se presente, i
+      // pacchetti con lo stesso gruppo finiscono sotto un <optgroup> col nome del gruppo come
+      // intestazione — richiesto da Greta per separare i pacchetti Natale enti in due fasce.
+      // null (tutti gli altri link, es. Halloween) = comportamento invariato, opzioni piatte.
+      var gruppiPacchetto = {};
+      var ordineGruppi = [];
       pacchetti.forEach(function (p) {
-        var opt = el('option', { value: p.id });
-        opt.textContent = p.nome;
-        selectPacchetto.appendChild(opt);
+        var chiaveGruppo = p.gruppo_pubblico || '';
+        if (!gruppiPacchetto[chiaveGruppo]) {
+          gruppiPacchetto[chiaveGruppo] = [];
+          ordineGruppi.push(chiaveGruppo);
+        }
+        gruppiPacchetto[chiaveGruppo].push(p);
+      });
+      ordineGruppi.forEach(function (chiaveGruppo) {
+        var contenitore = chiaveGruppo
+          ? el('optgroup', { label: chiaveGruppo })
+          : selectPacchetto;
+        gruppiPacchetto[chiaveGruppo].forEach(function (p) {
+          var opt = el('option', { value: p.id });
+          opt.textContent = p.nome;
+          contenitore.appendChild(opt);
+        });
+        if (chiaveGruppo) selectPacchetto.appendChild(contenitore);
       });
       selectPacchetto.onchange = function () { segna(selectPacchetto.value); };
       wrapper.appendChild(selectPacchetto);
