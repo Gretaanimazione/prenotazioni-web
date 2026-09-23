@@ -381,6 +381,13 @@
     text-align: center;
     box-shadow: 0 6px 16px rgba(214, 70, 123, 0.28);
   }
+  .immagine-preventivo {
+    display: block;
+    width: 100%;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
   .errore { color: var(--danger); font-size: 14px; margin: 8px 0; }
   .avviso-bozza { font-size: 12px; color: var(--testo-muto); text-align: center; margin-top: 10px; }
 
@@ -2181,15 +2188,27 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento…'));
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
       applicaTema(link.tema);
-      renderSceltaIniziale();
+      renderSceltaIniziale(link);
     }).catch(function (err) {
       app.innerHTML = '';
       app.appendChild(testo('p', 'errore', err.message || 'Link non valido.'));
     });
   }
 
-  function renderSceltaIniziale() {
+  // Richiesto da Greta per le collaborazioni con le location (prezzi/servizi diversi per
+  // ognuna): se il link ha un'immagine di preventivo caricata, va mostrata PRIMA di tutto —
+  // sopra al pulsante "Fai una nuova prenotazione", non dopo — così la cliente la vede subito
+  // aprendo il link, prima ancora di decidere se prenotare.
+  function renderSceltaIniziale(link) {
     app.innerHTML = '';
+    if (link && link.immagine_preventivo_url) {
+      var immaginePreventivo = el('img', {
+        class: 'immagine-preventivo',
+        src: link.immagine_preventivo_url,
+        alt: 'Preventivo',
+      });
+      app.appendChild(immaginePreventivo);
+    }
     var bottoneNuova = el('button', { class: 'pulsante-titolo' });
     bottoneNuova.textContent = 'Fai una nuova prenotazione';
     bottoneNuova.onclick = function () { avviaModulo(); };
