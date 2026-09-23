@@ -1832,6 +1832,13 @@
 
     var sezioneDettagli = el('div', { class: 'sezione' });
     (p.risposte_cliente || []).forEach(function (r) {
+      // Il numero di bambini ha una sezione dedicata più sotto ("Numero di bambini", sempre
+      // aggiornata e modificabile senza passare da una richiesta di modifica approvata da Greta):
+      // mostrarlo anche qui, come riga statica senza nessun tasto, faceva pensare che non fosse
+      // più modificabile — bug reale segnalato da Greta (cliente Niloofar, prenotazione 2026-000331):
+      // vedeva "Quanti bambini saranno alla festa? —" in mezzo a righe che avevano tutte un tasto
+      // "Modifica", senza capire che il campo giusto era la sezione più in basso.
+      if (r.chiave_destinazione === 'numero_bambini') return;
       var domandaOriginale = (p.domande_snapshot || []).find(function (d) { return d.id === r.domanda_id; });
       var contenitoreRiga = el('div', {});
       var riga = el('div', { class: 'riga-dettaglio' });
