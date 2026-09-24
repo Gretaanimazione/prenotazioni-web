@@ -381,6 +381,11 @@
     text-align: center;
     box-shadow: 0 6px 16px rgba(214, 70, 123, 0.28);
   }
+  .pulsante-titolo.secondario-tema {
+    margin-top: 14px;
+    background: linear-gradient(135deg, #b8862e, #8a6320);
+    box-shadow: 0 6px 16px rgba(138, 99, 32, 0.28);
+  }
   .immagine-preventivo {
     display: block;
     width: 100%;
@@ -2210,9 +2215,21 @@
       app.appendChild(immaginePreventivo);
     }
     var bottoneNuova = el('button', { class: 'pulsante-titolo' });
-    bottoneNuova.textContent = 'Fai una nuova prenotazione';
+    bottoneNuova.textContent = (link && link.bottone_primario_testo) || 'Fai una nuova prenotazione';
     bottoneNuova.onclick = function () { avviaModulo(); };
     app.appendChild(bottoneNuova);
+
+    // Richiesto da Greta per i link che offrono sia animazione bimbi sia servizi per adulti dalla
+    // stessa pagina (es. Villa Borghi): stesso preventivo mostrato sopra, ma un secondo pulsante
+    // porta a un modulo diverso (un altro url_token), invece di mescolare le due cose in uno solo.
+    if (link && link.bottone_secondario_url_token && link.bottone_secondario_testo) {
+      var bottoneSecondario = el('button', { class: 'pulsante-titolo secondario-tema' });
+      bottoneSecondario.textContent = link.bottone_secondario_testo;
+      bottoneSecondario.onclick = function () {
+        window.location.href = '/' + link.bottone_secondario_url_token;
+      };
+      app.appendChild(bottoneSecondario);
+    }
 
     var oppure = testo('p', 'istruzioni', 'Oppure, se hai già prenotato:');
     oppure.style.margin = '24px 0 10px';
