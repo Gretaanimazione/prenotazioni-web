@@ -1642,7 +1642,11 @@
       var bottoneNuova = el('button', { class: 'pulsante' });
       bottoneNuova.style.marginTop = '16px';
       bottoneNuova.textContent = 'Fai una nuova prenotazione';
-      bottoneNuova.onclick = function () { avviaModulo(); };
+      // avviaSceltaIniziale(), non avviaModulo() direttamente: un link con due pulsanti
+      // (bimbi/adulti, es. Villa Borghi o Jiyu Wedding) deve riproporre la scelta anche a chi
+      // torna con prenotazioni già salvate — bug reale, una wedding planner con più prenotazioni
+      // finiva sempre nel modulo sbagliato dalla seconda volta in poi.
+      bottoneNuova.onclick = function () { avviaSceltaIniziale(); };
       app.appendChild(bottoneNuova);
     });
   }
@@ -1668,7 +1672,8 @@
     var azioniAltrePrenotazioni = el('div', { class: 'altre-prenotazioni' });
     var bottoneNuova = el('button', { class: 'pulsante secondario' });
     bottoneNuova.textContent = 'Fai una nuova prenotazione';
-    bottoneNuova.onclick = function () { avviaModulo(); };
+    // avviaSceltaIniziale(), non avviaModulo(): vedi commento in avviaElencoPrenotazioni sopra.
+    bottoneNuova.onclick = function () { avviaSceltaIniziale(); };
     azioniAltrePrenotazioni.appendChild(bottoneNuova);
     if (leggiTokenPersonali().length > 1) {
       var bottoneElenco = el('button', { class: 'pulsante secondario' });
@@ -2311,7 +2316,8 @@
     var bottoneNuova = el('button', { class: 'pulsante secondario' });
     bottoneNuova.style.marginTop = '12px';
     bottoneNuova.textContent = 'No, è la mia prima volta: fai una nuova prenotazione';
-    bottoneNuova.onclick = function () { avviaModulo(); };
+    // avviaSceltaIniziale(), non avviaModulo(): vedi commento in avviaElencoPrenotazioni sopra.
+    bottoneNuova.onclick = function () { avviaSceltaIniziale(); };
     app.appendChild(bottoneNuova);
   }
 
