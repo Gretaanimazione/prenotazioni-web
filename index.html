@@ -393,6 +393,16 @@
     margin-bottom: 20px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   }
+  /* Catalogo mostrato SOTTO un pulsante della scelta iniziale (es. Jiyu Wedding: il catalogo
+     bimbi sotto "Fai una prenotazione bimbi"), non sopra come .immagine-preventivo. */
+  .catalogo-scelta {
+    display: block;
+    width: 100%;
+    border-radius: 16px;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
   .errore { color: var(--danger); font-size: 14px; margin: 8px 0; }
   .avviso-bozza { font-size: 12px; color: var(--testo-muto); text-align: center; margin-top: 10px; }
 
@@ -2224,6 +2234,17 @@
     bottoneNuova.onclick = function () { avviaModulo(); };
     app.appendChild(bottoneNuova);
 
+    // Richiesto da Greta per Jiyu Wedding: il catalogo della prima scelta (es. animazione bimbi)
+    // va mostrato subito, in pagina, appena sotto il suo pulsante — non serve aprirlo a parte.
+    if (link && link.catalogo_bimbi_immagine_url) {
+      var catalogoBimbi = el('img', {
+        class: 'catalogo-scelta',
+        src: link.catalogo_bimbi_immagine_url,
+        alt: 'Catalogo',
+      });
+      app.appendChild(catalogoBimbi);
+    }
+
     // Richiesto da Greta per i link che offrono sia animazione bimbi sia servizi per adulti dalla
     // stessa pagina (es. Villa Borghi): stesso preventivo mostrato sopra, ma un secondo pulsante
     // porta a un modulo diverso (un altro url_token), invece di mescolare le due cose in uno solo.
@@ -2234,6 +2255,18 @@
         window.location.href = '/' + link.bottone_secondario_url_token;
       };
       app.appendChild(bottoneSecondario);
+    }
+
+    // Richiesto da Greta per Jiyu Wedding: la seconda scelta (servizi per adulti) ha un catalogo a
+    // più pagine, meglio come PDF da aprire a parte invece che tutto in pagina.
+    if (link && link.catalogo_adulti_pdf_url) {
+      var bottonePdfAdulti = el('button', { class: 'pulsante secondario' });
+      bottonePdfAdulti.style.marginTop = '10px';
+      bottonePdfAdulti.textContent = 'Apri PDF adulti';
+      bottonePdfAdulti.onclick = function () {
+        window.open(link.catalogo_adulti_pdf_url, '_blank');
+      };
+      app.appendChild(bottonePdfAdulti);
     }
 
     var oppure = testo('p', 'istruzioni', 'Oppure, se hai già prenotato:');
