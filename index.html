@@ -2258,11 +2258,12 @@
     }
 
     // Richiesto da Greta per Jiyu Wedding: la seconda scelta (servizi per adulti) ha un catalogo a
-    // più pagine, meglio come PDF da aprire a parte invece che tutto in pagina.
+    // più pagine, meglio come PDF da aprire a parte invece che tutto in pagina. Testo del tasto
+    // personalizzabile per link (richiesto per Villa Renoir), 'Apri PDF adulti' di default.
     if (link && link.catalogo_adulti_pdf_url) {
       var bottonePdfAdulti = el('button', { class: 'pulsante secondario' });
       bottonePdfAdulti.style.marginTop = '10px';
-      bottonePdfAdulti.textContent = 'Apri PDF adulti';
+      bottonePdfAdulti.textContent = link.catalogo_adulti_pdf_testo_bottone || 'Apri PDF adulti';
       bottonePdfAdulti.onclick = function () {
         window.open(link.catalogo_adulti_pdf_url, '_blank');
       };
