@@ -1341,6 +1341,141 @@
       wrapper.appendChild(inputFoto);
       wrapper.appendChild(statoFoto);
       wrapper.appendChild(erroreFoto);
+    } else if (domanda.tipo_campo === 'audio') {
+      // Registrazione di un messaggio vocale dal microfono del browser (MediaRecorder), per
+      // lasciare indicazioni più precise all'animatrice/animatore — richiesto da Greta. Stesso
+      // schema di tipo_campo 'foto' sopra (upload via carica_audio_risposta, segna() salva il
+      // percorso restituito), con in più registra/riascolta/rifai prima di salvare per davvero.
+      var DURATA_MASSIMA_AUDIO_SECONDI = 180;
+      var mimeTypeAudio = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
+        .filter(function (t) { return window.MediaRecorder && MediaRecorder.isTypeSupported(t); })[0];
+      var statoAudio = testo('p', 'descrizione', 'Nessun audio registrato.');
+      var erroreAudio = testo('p', 'errore', '');
+      var anteprimaAudio = el('audio', { controls: 'controls' });
+      anteprimaAudio.style.display = 'none';
+      anteprimaAudio.style.width = '100%';
+      var azioniAudio = el('div', { class: 'opzioni-riga' });
+      var bottoneRegistra = el('button', { type: 'button', class: 'pulsante secondario' });
+      bottoneRegistra.textContent = 'Registra audio';
+      var bottoneSalvaAudio = el('button', { type: 'button', class: 'pulsante' });
+      bottoneSalvaAudio.textContent = 'Salva audio';
+      bottoneSalvaAudio.style.display = 'none';
+      var bottoneRifaiAudio = el('button', { type: 'button', class: 'pulsante secondario' });
+      bottoneRifaiAudio.textContent = 'Registra di nuovo';
+      bottoneRifaiAudio.style.display = 'none';
+
+      var registratoreAudio = null;
+      var pezziAudio = [];
+      var streamMicrofono = null;
+      var blobAudioRegistrato = null;
+      var cronometroId = null;
+
+      function fermaMicrofono() {
+        if (streamMicrofono) {
+          streamMicrofono.getTracks().forEach(function (t) { t.stop(); });
+          streamMicrofono = null;
+        }
+      }
+      function formattaSecondi(s) {
+        var m = Math.floor(s / 60);
+        var ss = String(s % 60).padStart(2, '0');
+        return m + ':' + ss;
+      }
+      function mostraStatoIniziale() {
+        bottoneRegistra.style.display = '';
+        bottoneRegistra.disabled = false;
+        bottoneRegistra.textContent = 'Registra audio';
+        bottoneSalvaAudio.style.display = 'none';
+        bottoneRifaiAudio.style.display = 'none';
+        anteprimaAudio.style.display = 'none';
+      }
+      function iniziaRegistrazione() {
+        if (!window.MediaRecorder || !navigator.mediaDevices || !mimeTypeAudio) {
+          erroreAudio.textContent = 'Il tuo browser non supporta la registrazione audio: prova da un telefono o computer più recente.';
+          return;
+        }
+        erroreAudio.textContent = '';
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+          streamMicrofono = stream;
+          pezziAudio = [];
+          registratoreAudio = new MediaRecorder(stream, { mimeType: mimeTypeAudio });
+          registratoreAudio.ondataavailable = function (e) {
+            if (e.data && e.data.size > 0) pezziAudio.push(e.data);
+          };
+          registratoreAudio.onstop = function () {
+            fermaMicrofono();
+            blobAudioRegistrato = new Blob(pezziAudio, { type: mimeTypeAudio.split(';')[0] });
+            anteprimaAudio.src = URL.createObjectURL(blobAudioRegistrato);
+            anteprimaAudio.style.display = '';
+            bottoneRegistra.style.display = 'none';
+            bottoneSalvaAudio.style.display = '';
+            bottoneRifaiAudio.style.display = '';
+            statoAudio.textContent = 'Audio registrato: riascoltalo qui sotto, poi salvalo o registra di nuovo.';
+          };
+          registratoreAudio.start();
+          bottoneRegistra.textContent = 'Ferma registrazione (0:00)';
+          bottoneRegistra.className = 'pulsante pericolo';
+          statoAudio.textContent = 'Registrazione in corso…';
+          var secondiTrascorsi = 0;
+          cronometroId = setInterval(function () {
+            secondiTrascorsi += 1;
+            bottoneRegistra.textContent = 'Ferma registrazione (' + formattaSecondi(secondiTrascorsi) + ')';
+            if (secondiTrascorsi >= DURATA_MASSIMA_AUDIO_SECONDI) {
+              registratoreAudio.stop();
+            }
+          }, 1000);
+        }).catch(function () {
+          erroreAudio.textContent = 'Non riesco ad accedere al microfono: controlla di aver dato il permesso al browser.';
+        });
+      }
+      bottoneRegistra.onclick = function () {
+        if (registratoreAudio && registratoreAudio.state === 'recording') {
+          clearInterval(cronometroId);
+          registratoreAudio.stop();
+          bottoneRegistra.className = 'pulsante secondario';
+        } else {
+          iniziaRegistrazione();
+        }
+      };
+      bottoneRifaiAudio.onclick = function () {
+        blobAudioRegistrato = null;
+        segna(null);
+        mostraStatoIniziale();
+        statoAudio.textContent = 'Nessun audio registrato.';
+      };
+      bottoneSalvaAudio.onclick = function () {
+        if (!blobAudioRegistrato) return;
+        erroreAudio.textContent = '';
+        bottoneSalvaAudio.disabled = true;
+        bottoneSalvaAudio.textContent = 'Salvataggio…';
+        var reader = new FileReader();
+        reader.onload = function () {
+          var base64 = String(reader.result).split(',')[1] || '';
+          chiama('carica_audio_risposta', {
+            url_token: urlToken,
+            contenuto_base64: base64,
+            tipo_mime: blobAudioRegistrato.type,
+          }).then(function (esito) {
+            statoAudio.textContent = 'Audio salvato ✓';
+            bottoneSalvaAudio.textContent = 'Audio salvato ✓';
+            bottoneRifaiAudio.textContent = 'Registra un altro audio';
+            segna(esito.percorso);
+          }).catch(function (err) {
+            erroreAudio.textContent = err.message;
+            bottoneSalvaAudio.disabled = false;
+            bottoneSalvaAudio.textContent = 'Salva audio';
+          });
+        };
+        reader.readAsDataURL(blobAudioRegistrato);
+      };
+
+      azioniAudio.appendChild(bottoneRegistra);
+      azioniAudio.appendChild(bottoneSalvaAudio);
+      azioniAudio.appendChild(bottoneRifaiAudio);
+      wrapper.appendChild(statoAudio);
+      wrapper.appendChild(anteprimaAudio);
+      wrapper.appendChild(azioniAudio);
+      wrapper.appendChild(erroreAudio);
     } else if (domanda.tipo_campo === 'note') {
       var area = el('textarea', { placeholder: domanda.placeholder || '' });
       area.oninput = function () { segna(area.value); };
