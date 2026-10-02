@@ -1346,7 +1346,6 @@
       // lasciare indicazioni più precise all'animatrice/animatore — richiesto da Greta. Stesso
       // schema di tipo_campo 'foto' sopra (upload via carica_audio_risposta, segna() salva il
       // percorso restituito), con in più registra/riascolta/rifai prima di salvare per davvero.
-      var DURATA_MASSIMA_AUDIO_SECONDI = 180;
       var mimeTypeAudio = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
         .filter(function (t) { return window.MediaRecorder && MediaRecorder.isTypeSupported(t); })[0];
       var statoAudio = testo('p', 'descrizione', 'Nessun audio registrato.');
@@ -1404,7 +1403,7 @@
         navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
           streamMicrofono = stream;
           pezziAudio = [];
-          registratoreAudio = new MediaRecorder(stream, { mimeType: mimeTypeAudio });
+          registratoreAudio = new MediaRecorder(stream, { mimeType: mimeTypeAudio, audioBitsPerSecond: 32000 });
           registratoreAudio.ondataavailable = function (e) {
             if (e.data && e.data.size > 0) pezziAudio.push(e.data);
           };
@@ -1429,9 +1428,6 @@
           cronometroId = setInterval(function () {
             secondiTrascorsi += 1;
             bottoneStop.textContent = 'Stop (' + formattaSecondi(secondiTrascorsi) + ')';
-            if (secondiTrascorsi >= DURATA_MASSIMA_AUDIO_SECONDI) {
-              registratoreAudio.stop();
-            }
           }, 1000);
         }).catch(function () {
           erroreAudio.textContent = 'Non riesco ad accedere al microfono: controlla di aver dato il permesso al browser.';
