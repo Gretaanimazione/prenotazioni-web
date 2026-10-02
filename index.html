@@ -950,6 +950,24 @@
     return e;
   }
 
+  // Alcune domande a scelta multipla indicano un tetto nel testo, es. "Scegli i servizi (massimo 2)"
+  // (Mini Party da 1 ora: 2 servizi, da 1 ora e 30: 3). Quando il tetto è raggiunto le altre
+  // caselle si bloccano, così la cliente non può sceglierne di più.
+  function massimoSelezioni(testoDomanda) {
+    var m = /massimo\s+(\d+)/i.exec(testoDomanda || '');
+    return m ? parseInt(m[1], 10) : null;
+  }
+  function applicaTettoSelezioni(caselle, selezionati, massimo, avviso) {
+    if (!massimo) return;
+    var pieno = selezionati.length >= massimo;
+    caselle.forEach(function (c) { if (!c.checked) c.disabled = pieno; });
+    if (avviso) {
+      avviso.textContent = pieno
+        ? 'Hai scelto il massimo consentito (' + massimo + '). Per cambiare scelta, togli prima una spunta.'
+        : '';
+    }
+  }
+
   // Suggerimenti indirizzo (Mapbox Geocoding, solo Italia): richiesto da Greta per far scegliere
   // alla cliente un indirizzo verificato da un elenco invece di scriverlo a mano libera. Passa
   // dalla Edge Function "prenota" (azione suggerimenti_indirizzo) invece di chiamare Mapbox da
@@ -1527,18 +1545,24 @@
       });
     } else if (domanda.tipo_campo === 'scelta_multipla' && domanda.opzioni) {
       var selezionate = [];
+      var massimoScelte = massimoSelezioni(domanda.testo);
+      var caselleScelte = [];
+      var avvisoMassimo = testo('p', 'descrizione', '');
       domanda.opzioni.forEach(function (opzione) {
         var riga = el('div', { class: 'opzioni-riga' });
         var input = el('input', { type: 'checkbox' });
+        caselleScelte.push(input);
         input.onchange = function () {
           if (input.checked) selezionate.push(opzione);
           else selezionate = selezionate.filter(function (o) { return o !== opzione; });
+          applicaTettoSelezioni(caselleScelte, selezionate, massimoScelte, avvisoMassimo);
           segna(selezionate.slice());
         };
         riga.appendChild(input);
         riga.appendChild(testo('span', null, opzione));
         wrapper.appendChild(riga);
       });
+      wrapper.appendChild(avvisoMassimo);
     } else if (domanda.tipo_campo === 'selezione_da_elenco' && domanda.opzioni) {
       var select = el('select', {});
       select.appendChild(el('option', { value: '' }));
@@ -1936,18 +1960,25 @@
       if (r.tipo_campo === 'scelta_multipla') {
         var selezionati = Array.isArray(r.risposta) ? r.risposta.slice() : [];
         var box = el('div', { class: 'editor-opzioni' });
+        var massimoEditor = massimoSelezioni(r.testo_domanda);
+        var caselleEditor = [];
+        var avvisoEditor = testo('p', 'descrizione', '');
         opzioni.forEach(function (op) {
           var id = 'chk-' + r.domanda_id + '-' + op;
           var check = el('input', { type: 'checkbox', id: id, value: op });
           check.checked = selezionati.indexOf(op) !== -1;
+          caselleEditor.push(check);
           check.onchange = function () {
             selezionati = check.checked
               ? selezionati.concat([op])
               : selezionati.filter(function (v) { return v !== op; });
+            applicaTettoSelezioni(caselleEditor, selezionati, massimoEditor, avvisoEditor);
           };
           var label = el('label', { for: id }, [check, document.createTextNode(' ' + op)]);
           box.appendChild(label);
         });
+        applicaTettoSelezioni(caselleEditor, selezionati, massimoEditor, avvisoEditor);
+        box.appendChild(avvisoEditor);
         editor.appendChild(box);
         input = { leggiValore: function () { return selezionati; } };
       } else if (r.tipo_campo === 'selezione_da_elenco' || r.tipo_campo === 'scelta_singola') {
