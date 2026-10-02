@@ -1356,12 +1356,15 @@
       anteprimaAudio.style.width = '100%';
       var azioniAudio = el('div', { class: 'opzioni-riga' });
       var bottoneRegistra = el('button', { type: 'button', class: 'pulsante secondario' });
-      bottoneRegistra.textContent = 'Registra audio';
+      bottoneRegistra.textContent = 'Registra';
+      var bottoneStop = el('button', { type: 'button', class: 'pulsante pericolo' });
+      bottoneStop.textContent = 'Stop (0:00)';
+      bottoneStop.style.display = 'none';
       var bottoneSalvaAudio = el('button', { type: 'button', class: 'pulsante' });
       bottoneSalvaAudio.textContent = 'Salva audio';
       bottoneSalvaAudio.style.display = 'none';
       var bottoneRifaiAudio = el('button', { type: 'button', class: 'pulsante secondario' });
-      bottoneRifaiAudio.textContent = 'Registra di nuovo';
+      bottoneRifaiAudio.textContent = 'Cancella';
       bottoneRifaiAudio.style.display = 'none';
 
       var registratoreAudio = null;
@@ -1384,7 +1387,10 @@
       function mostraStatoIniziale() {
         bottoneRegistra.style.display = '';
         bottoneRegistra.disabled = false;
-        bottoneRegistra.textContent = 'Registra audio';
+        bottoneRegistra.textContent = 'Registra';
+        bottoneStop.style.display = 'none';
+        bottoneSalvaAudio.disabled = false;
+        bottoneSalvaAudio.textContent = 'Salva audio';
         bottoneSalvaAudio.style.display = 'none';
         bottoneRifaiAudio.style.display = 'none';
         anteprimaAudio.style.display = 'none';
@@ -1403,6 +1409,8 @@
             if (e.data && e.data.size > 0) pezziAudio.push(e.data);
           };
           registratoreAudio.onstop = function () {
+            clearInterval(cronometroId);
+            bottoneStop.style.display = 'none';
             fermaMicrofono();
             blobAudioRegistrato = new Blob(pezziAudio, { type: mimeTypeAudio.split(';')[0] });
             anteprimaAudio.src = URL.createObjectURL(blobAudioRegistrato);
@@ -1410,16 +1418,17 @@
             bottoneRegistra.style.display = 'none';
             bottoneSalvaAudio.style.display = '';
             bottoneRifaiAudio.style.display = '';
-            statoAudio.textContent = 'Audio registrato: riascoltalo qui sotto, poi salvalo o registra di nuovo.';
+            statoAudio.textContent = 'Audio registrato: riascoltalo qui sotto, poi premi Salva audio oppure Cancella per ricominciare.';
           };
           registratoreAudio.start();
-          bottoneRegistra.textContent = 'Ferma registrazione (0:00)';
-          bottoneRegistra.className = 'pulsante pericolo';
+          bottoneRegistra.style.display = 'none';
+          bottoneStop.style.display = '';
+          bottoneStop.textContent = 'Stop (0:00)';
           statoAudio.textContent = 'Registrazione in corso…';
           var secondiTrascorsi = 0;
           cronometroId = setInterval(function () {
             secondiTrascorsi += 1;
-            bottoneRegistra.textContent = 'Ferma registrazione (' + formattaSecondi(secondiTrascorsi) + ')';
+            bottoneStop.textContent = 'Stop (' + formattaSecondi(secondiTrascorsi) + ')';
             if (secondiTrascorsi >= DURATA_MASSIMA_AUDIO_SECONDI) {
               registratoreAudio.stop();
             }
@@ -1429,12 +1438,11 @@
         });
       }
       bottoneRegistra.onclick = function () {
+        iniziaRegistrazione();
+      };
+      bottoneStop.onclick = function () {
         if (registratoreAudio && registratoreAudio.state === 'recording') {
-          clearInterval(cronometroId);
           registratoreAudio.stop();
-          bottoneRegistra.className = 'pulsante secondario';
-        } else {
-          iniziaRegistrazione();
         }
       };
       bottoneRifaiAudio.onclick = function () {
@@ -1458,7 +1466,6 @@
           }).then(function (esito) {
             statoAudio.textContent = 'Audio salvato ✓';
             bottoneSalvaAudio.textContent = 'Audio salvato ✓';
-            bottoneRifaiAudio.textContent = 'Registra un altro audio';
             segna(esito.percorso);
           }).catch(function (err) {
             erroreAudio.textContent = err.message;
@@ -1470,6 +1477,7 @@
       };
 
       azioniAudio.appendChild(bottoneRegistra);
+      azioniAudio.appendChild(bottoneStop);
       azioniAudio.appendChild(bottoneSalvaAudio);
       azioniAudio.appendChild(bottoneRifaiAudio);
       wrapper.appendChild(statoAudio);
