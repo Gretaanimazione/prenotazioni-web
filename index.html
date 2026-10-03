@@ -404,6 +404,7 @@
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   }
   .errore { color: var(--danger); font-size: 14px; margin: 8px 0; }
+  .titolo-form.intestazione-scelta { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 700; line-height: 1.35; margin: 4px 0 20px; }
   .avviso-bozza { font-size: 12px; color: var(--testo-muto); text-align: center; margin-top: 10px; }
 
   /* ---------- Schermata di conferma ---------- */
@@ -878,6 +879,229 @@
   // sempre (rientra lì); con zero o più di una si passa dalla schermata "Le tue prenotazioni".
   var tokenPersonale = tokenPersonaleDaUrl;
 
+  // ============================================================
+  // Lingua. I link delle collaborazioni con wedding planner straniere hanno lingua = 'en': le
+  // risposte salvate restano SEMPRE in italiano (le animatrici le leggono così), si traduce solo
+  // ciò che vede la cliente. Domande/opzioni: da link.traduzioni (per id di domanda). Testi fissi
+  // della pagina: dizionario EN qui sotto, applicato da un osservatore del DOM che attiva solo con
+  // lingua 'en' (le pagine italiane non passano mai di qui).
+  // ============================================================
+  var LINGUA = 'it';
+  var TRAD = {};
+  var LOCALE = 'it-IT';
+
+  var EN = {
+    'Caricamento…': 'Loading…',
+    'Caricamento del modulo…': 'Loading the form…',
+    'Caricamento della tua prenotazione…': 'Loading your booking…',
+    'Caricamento delle tue prenotazioni…': 'Loading your bookings…',
+    'Caricamento in corso…': 'Uploading…',
+    'Fai una nuova prenotazione': 'Make a new booking',
+    'Oppure, se hai già prenotato:': 'Or, if you have already booked:',
+    'Cerca una prenotazione già effettuata per modificarla': 'Find an existing booking to change it',
+    'Apri PDF adulti': "Open adults' PDF",
+    'Apri PDF bimbi': "Open children's PDF",
+    'Hai già prenotato?': 'Have you already booked?',
+    'Se hai già fatto una prenotazione con questo link ma non la trovi più, inserisci qui sotto i dati che hai usato per ritrovarla.': 'If you have already made a booking with this link but cannot find it any more, enter below the details you used to find it again.',
+    'Numero di telefono': 'Phone number',
+    'Es. 333 1234567': 'e.g. 333 1234567',
+    'Cognome (o nome, come scritto nella prenotazione)': 'Surname (or first name, as written in the booking)',
+    'Es. Rossi': 'e.g. Smith',
+    'Cerca la mia prenotazione': 'Find my booking',
+    'Ricerca in corso…': 'Searching…',
+    'Inserisci sia il telefono sia il cognome.': 'Please enter both the phone number and the surname.',
+    'Nessuna prenotazione trovata con questi dati. Controlla di aver scritto tutto giusto, oppure fanne una nuova qui sotto.': 'No booking found with these details. Please check everything is spelled correctly, or make a new booking below.',
+    'Ricerca non riuscita.': 'Search failed.',
+    'No, è la mia prima volta: fai una nuova prenotazione': 'No, this is my first time: make a new booking',
+    'Invia prenotazione': 'Send booking',
+    'I tuoi dati vengono salvati automaticamente mentre compili.': 'Your details are saved automatically as you fill in the form.',
+    'Prenotazione': 'Booking',
+    'confermata!': 'confirmed!',
+    'Grazie! ': 'Thank you! ',
+    'La tua festa è in buone mani.': 'Your event is in good hands.',
+    'Il link che ti è stato mandato per messaggio ti permette di rivedere o modificare la tua prenotazione.': 'The link you were sent lets you review or change your booking.',
+    'Ricliccalo quando vuoi, tornerai alla tua prenotazione!': 'Click it again whenever you like to return to your booking!',
+    'Se in futuro usi un telefono diverso, questo è un link di riserva:': 'If you use a different phone in future, this is a backup link:',
+    'Copia link di riserva': 'Copy backup link',
+    'Copiato ✓': 'Copied ✓',
+    'Copia': 'Copy',
+    'Tieni premuto per copiare': 'Press and hold to copy',
+    'Tieni premuto il testo sopra per copiarlo': 'Press and hold the text above to copy it',
+    'Ci vediamo presto!': 'See you soon!',
+    'Tipo di evento': 'Event type',
+    'Data': 'Date',
+    'Link non valido.': 'Invalid link.',
+    'Link non valido o non più disponibile.': 'This link is not valid or no longer available.',
+    'Le tue prenotazioni': 'Your bookings',
+    'La tua prenotazione': 'Your booking',
+    'Non risulta ancora nessuna prenotazione valida su questo dispositivo.': 'There is no valid booking yet on this device.',
+    'Vedi tutte le tue prenotazioni': 'See all your bookings',
+    'Confermata': 'Confirmed',
+    'Annullata': 'Cancelled',
+    'In compilazione': 'In progress',
+    'Questa prenotazione è stata annullata.': 'This booking has been cancelled.',
+    'Modifica': 'Change',
+    'Modifica in attesa': 'Change pending',
+    'Aggiungi': 'Add',
+    'Annulla': 'Cancel',
+    'Invia richiesta': 'Send request',
+    'Invia richiesta di modifica': 'Send change request',
+    'Richiesta inviata ✓': 'Request sent ✓',
+    "Inserisci sia la data sia l'orario.": 'Please enter both the date and the time.',
+    'Ricevuta del pagamento': 'Payment receipt',
+    "Ricevuta già allegata. Puoi caricarne un'altra per sostituirla.": 'Receipt already attached. You can upload another one to replace it.',
+    'Quando hai effettuato il pagamento, allega qui la ricevuta (screenshot va bene).': 'Once you have paid, attach the receipt here (a screenshot is fine).',
+    'Ricevuta allegata ✓': 'Receipt attached ✓',
+    'Nessuna foto scelta.': 'No photo chosen.',
+    'Scegli un file immagine (JPG, PNG, WEBP).': 'Please choose an image file (JPG, PNG, WEBP).',
+    "Foto troppo grande: usa un'immagine sotto gli 8 MB.": 'Photo too large: please use an image under 8 MB.',
+    'La modifica non è più disponibile per questo evento.': 'Changes are no longer available for this event.',
+    'Numero di bambini': 'Number of children',
+    "Mancano meno di 7 giorni all'evento: questo è il numero definitivo, usato per l'importo finale.": 'There are fewer than 7 days to the event: this is the final number, used for the final amount.',
+    'Non hai ancora indicato il numero di bambini.': 'You have not entered the number of children yet.',
+    'Conferma numero definitivo': 'Confirm final number',
+    'Aggiorna numero': 'Update number',
+    'Salva numero': 'Save number',
+    'Salvato ✓': 'Saved ✓',
+    'Inserisci il numero di bambini prima di salvare.': 'Please enter the number of children before saving.',
+    'Hai bisogno di cambiare qualcosa?': 'Need to change something?',
+    'Per data, orario, indirizzo o gli altri campi qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.': 'For the date, time, address or the other fields above, use the "Change" button next to the line. Use this space only for notes or requests that are not about a specific field.',
+    'Hai già una richiesta di questo tipo in attesa di risposta.': 'You already have a request of this kind waiting for an answer.',
+    'Scrivi qui cosa vorresti cambiare…': 'Write here what you would like to change…',
+    'Scrivi cosa vorresti cambiare.': 'Please write what you would like to change.',
+    "Hai già richiesto l'annullamento di questa prenotazione: la titolare ti risponderà a breve.": 'You have already requested the cancellation of this booking: the owner will reply shortly.',
+    "Richiedi l'annullamento": 'Request cancellation',
+    "Vuoi richiedere l'annullamento di questa prenotazione? La titolare dovrà confermarlo prima che sia effettivo.": 'Do you want to request the cancellation of this booking? The owner will have to confirm it before it takes effect.',
+    'Registra': 'Record',
+    'Salva audio': 'Save audio',
+    'Cancella': 'Cancel',
+    'Audio salvato ✓': 'Audio saved ✓',
+    'Salvataggio…': 'Saving…',
+    'Nessun audio registrato.': 'No audio recorded.',
+    'Registrazione in corso…': 'Recording…',
+    'Audio registrato: riascoltalo qui sotto, poi premi Salva audio oppure Cancella per ricominciare.': 'Audio recorded: listen to it below, then press Save audio, or Cancel to start again.',
+    'Il tuo browser non supporta la registrazione audio: prova da un telefono o computer più recente.': 'Your browser does not support audio recording: please try from a newer phone or computer.',
+    'Non riesco ad accedere al microfono: controlla di aver dato il permesso al browser.': 'I cannot access the microphone: please check you have given the browser permission.',
+    'Sì': 'Yes',
+    'Matrimonio': 'Wedding',
+    'Altro': 'Other',
+    'Contanti il giorno stesso': 'Cash on the day',
+    'Anticipato con bonifico': 'In advance by bank transfer',
+    'Anticipato con PayPal': 'In advance via PayPal',
+    'Anticipato con Satispay': 'In advance via Satispay',
+    'Anticipato con Postepay': 'In advance via Postepay',
+    'Ritiro io': 'I will collect it',
+    'Ritirano le animatrici': 'Our team will collect it',
+    "Un'animatrice": 'One entertainer',
+    "Un'animatrice più un assistente": 'One entertainer plus one assistant',
+    'Preventivo': 'Quote',
+    'Catalogo': 'Catalogue',
+    'copia non riuscita': 'copy failed',
+    'Errore imprevisto.': 'Something went wrong. Please try again, or contact us on WhatsApp at +39 349 683 8756.',
+    'Numero riconosciuto ✓ Scegli il tuo regalo qui sotto.': 'Number recognised ✓ Choose your gift below.'
+  };
+  // Frasi con parti variabili. Ogni regola: [espressione, funzione che costruisce la frase inglese].
+  var EN_REGOLE = [
+    [/^Numero confermato: (\d+) bambini(?: \(il (.+)\))?\.$/, function (m) { return 'Number confirmed: ' + m[1] + ' children' + (m[2] ? ' (on ' + m[2] + ')' : '') + '.'; }],
+    [/^Numero indicato finora: (\d+) bambini \(non ancora confermato in modo definitivo\)\.$/, function (m) { return 'Number entered so far: ' + m[1] + ' children (not yet confirmed as final).'; }],
+    [/^Foto caricata: (.+)$/, function (m) { return 'Photo uploaded: ' + m[1]; }],
+    [/^Ricevuta caricata: (.+)$/, function (m) { return 'Receipt uploaded: ' + m[1]; }],
+    [/^Hai scelto il massimo consentito \((\d+)\)\. Per cambiare scelta, togli prima una spunta\.$/, function (m) { return 'You have chosen the maximum allowed (' + m[1] + '). To change your choice, untick one first.'; }],
+    [/^(.+) \(non inserito\)$/, function (m) { return m[1] + ' (not entered)'; }],
+    [/^Hai richieste di modifica in attesa su: (.+)\. Puoi comunque richiedere modifiche su altri campi\.$/, function (m) { return 'You have pending change requests on: ' + m[1] + '. You can still request changes to other fields.'; }],
+    [/^"(.+)" è obbligatorio\.$/, function (m) { return '"' + trOriginale(m[1]) + '" is required.'; }]
+  ];
+
+  function tradStringa(valore) {
+    if (LINGUA !== 'en' || !valore) return valore;
+    var nucleo = valore.trim();
+    if (!nucleo) return valore;
+    var diretta = EN[nucleo];
+    if (diretta !== undefined) return valore.replace(nucleo, diretta);
+    for (var i = 0; i < EN_REGOLE.length; i++) {
+      var m = EN_REGOLE[i][0].exec(nucleo);
+      if (m) return valore.replace(nucleo, EN_REGOLE[i][1](m));
+    }
+    return valore;
+  }
+  function t(valore) { return tradStringa(valore); }
+
+  // Testo inglese di una domanda a partire dal suo testo italiano (per i messaggi d'errore del server).
+  function trOriginale(testoItaliano) {
+    var trovato = testoItaliano;
+    Object.keys(TRAD).forEach(function (id) {
+      if (TRAD[id] && TRAD[id].testo && TRAD[id].it === testoItaliano) trovato = TRAD[id].testo;
+    });
+    return trovato;
+  }
+
+  var ERRORI_SERVER_EN = [
+    [/^Il nome della cliente è obbligatorio\.$/, 'Your name is required.'],
+    [/^Il tipo di evento è obbligatorio\.$/, 'The event type is required.'],
+    [/^La data e l.ora dell.evento sono obbligatorie\.$/, 'The date and time of the event are required.'],
+    [/^Prenotazione non modificabile\.$/, 'This booking can no longer be changed.'],
+    [/^Link non valido/, 'This link is not valid or no longer available.']
+  ];
+  function tradErroreServer(messaggio) {
+    if (LINGUA !== 'en') return messaggio;
+    var m = /^"(.+)" è obbligatorio\.$/.exec(messaggio || '');
+    if (m) return '"' + trOriginale(m[1]) + '" is required.';
+    for (var i = 0; i < ERRORI_SERVER_EN.length; i++) {
+      if (ERRORI_SERVER_EN[i][0].test(messaggio || '')) return ERRORI_SERVER_EN[i][1];
+    }
+    var diretta = EN[messaggio];
+    if (diretta !== undefined) return diretta;
+    return 'Something went wrong. Please check your answers and try again, or contact us on WhatsApp at +39 349 683 8756.';
+  }
+
+  // Testo/descrizione/segnaposto di una domanda e etichetta di una sua opzione, nella lingua del link.
+  function trD(domanda, campo) {
+    var tr = LINGUA === 'en' && TRAD && TRAD[domanda.id];
+    return (tr && tr[campo]) || domanda[campo];
+  }
+  function etichettaOpzione(domanda, opzione) {
+    var tr = LINGUA === 'en' && TRAD && TRAD[domanda && domanda.id];
+    if (tr && tr.opzioni && domanda.opzioni) {
+      var i = domanda.opzioni.indexOf(opzione);
+      if (i >= 0 && tr.opzioni[i]) return tr.opzioni[i];
+    }
+    return opzione;
+  }
+
+  function traduciNodo(nodo) {
+    if (nodo.nodeType === 3) {
+      var nuovo = tradStringa(nodo.nodeValue);
+      if (nuovo !== nodo.nodeValue) nodo.nodeValue = nuovo;
+    } else if (nodo.nodeType === 1) {
+      ['placeholder', 'alt', 'title'].forEach(function (attr) {
+        var v = nodo.getAttribute && nodo.getAttribute(attr);
+        if (v) { var n = tradStringa(v); if (n !== v) nodo.setAttribute(attr, n); }
+      });
+      for (var c = nodo.firstChild; c; c = c.nextSibling) traduciNodo(c);
+    }
+  }
+  var osservatoreLingua = null;
+  function impostaLingua(link) {
+    if (!link || link.lingua !== 'en') return;
+    LINGUA = 'en';
+    LOCALE = 'en-GB';
+    TRAD = link.traduzioni || {};
+    // le traduzioni sono per id: tengo anche il testo italiano per poter risalire dai messaggi del server
+    (link.domande || []).forEach(function (d) { if (TRAD[d.id]) TRAD[d.id].it = d.testo; });
+    document.documentElement.lang = 'en';
+    document.title = 'Book with Greta Animazione e Allestimenti';
+    if (!osservatoreLingua) {
+      osservatoreLingua = new MutationObserver(function (mutazioni) {
+        mutazioni.forEach(function (mu) {
+          if (mu.type === 'characterData') traduciNodo(mu.target);
+          else if (mu.type === 'attributes') traduciNodo(mu.target);
+          else mu.addedNodes.forEach(traduciNodo);
+        });
+      });
+      osservatoreLingua.observe(app, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'alt', 'title'] });
+    }
+  }
+
   var ICONE = {
     persona: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 19c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
     telefono: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h3l1.4 4-2 1.6c1 2.2 2.8 4 5 5l1.6-2 4 1.4v3c0 1.1-.9 2-2 2C11.5 18 6 12.5 6 6c0-1.1.9-3 1-3Z"/></svg>',
@@ -927,7 +1151,7 @@
       body: JSON.stringify(Object.assign({ azione: azione }, payload)),
     }).then(function (r) {
       return r.json().then(function (corpo) {
-        if (!r.ok) throw new Error(corpo.errore || 'Errore imprevisto.');
+        if (!r.ok) throw new Error(tradErroreServer(corpo.errore || 'Errore imprevisto.'));
         return corpo.dati;
       });
     });
@@ -1195,7 +1419,7 @@
     bottone.onclick = function () {
       var mancante = trovaObbligatoriaMancante();
       if (mancante) {
-        errore.textContent = '"' + mancante.testo + '" è obbligatorio.';
+        errore.textContent = LINGUA === 'en' ? '"' + trD(mancante, 'testo') + '" is required.' : '"' + mancante.testo + '" è obbligatorio.';
         var wrapperMancante = wrapperPerId[mancante.id];
         if (wrapperMancante) wrapperMancante.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
@@ -1250,7 +1474,7 @@
     var perChiave = {};
     domande.forEach(function (d) {
       if (d.chiave_destinazione && risposte[d.id] !== undefined && risposte[d.id] !== '') {
-        perChiave[d.chiave_destinazione] = { label: d.testo, valore: risposte[d.id] };
+        perChiave[d.chiave_destinazione] = { label: trD(d, 'testo'), valore: etichettaOpzione(d, risposte[d.id]) };
       }
     });
     var righe = [];
@@ -1262,10 +1486,11 @@
   function formattaData(valore) {
     var d = new Date(valore);
     if (isNaN(d.getTime())) return String(valore);
-    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   var GIORNI_SETTIMANA = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+  var GIORNI_SETTIMANA_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // Formatta 'YYYY-MM-DD' (valore grezzo di un <input type="date">) in stile italiano GG/MM/AAAA
   // con il giorno della settimana tra parentesi — costruisce la data dai singoli numeri invece di
@@ -1278,7 +1503,7 @@
     var d = new Date(anno, mese - 1, giorno);
     var gg = String(giorno).padStart(2, '0');
     var mm = String(mese).padStart(2, '0');
-    return gg + '/' + mm + '/' + anno + ' (' + GIORNI_SETTIMANA[d.getDay()] + ')';
+    return gg + '/' + mm + '/' + anno + ' (' + (LINGUA === 'en' ? GIORNI_SETTIMANA_EN : GIORNI_SETTIMANA)[d.getDay()] + ')';
   }
 
   function iconaCampo(domanda) {
@@ -1292,7 +1517,7 @@
   function renderCampo(domanda, pacchetti, risposte, onCambia) {
     var wrapper = el('div', { class: 'campo' });
     var label = el('label', {});
-    label.textContent = domanda.testo + (domanda.obbligatoria ? ' ' : '');
+    label.textContent = trD(domanda, 'testo') + (domanda.obbligatoria ? ' ' : '');
     if (domanda.obbligatoria) {
       var stellina = el('span', { class: 'obbligatoria' });
       stellina.textContent = '*';
@@ -1550,7 +1775,7 @@
       wrapper.appendChild(azioniAudio);
       wrapper.appendChild(erroreAudio);
     } else if (domanda.tipo_campo === 'note') {
-      var area = el('textarea', { placeholder: domanda.placeholder || '' });
+      var area = el('textarea', { placeholder: trD(domanda, 'placeholder') || '' });
       area.oninput = function () { segna(area.value); };
       wrapper.appendChild(area);
     } else if (domanda.tipo_campo === 'informativo') {
@@ -1562,7 +1787,7 @@
       // "Intestazione: X · IBAN: Y · Causale: Z · <istruzione libera>": ogni pezzo "Etichetta: valore"
       // diventa una riga con il proprio "Copia" (si copia un dato alla volta), il resto (istruzioni
       // senza quel formato) resta testo semplice.
-      (domanda.descrizione || '').split(' · ').forEach(function (segmento) {
+      (trD(domanda, 'descrizione') || '').split(' · ').forEach(function (segmento) {
         var indiceDuePunti = segmento.indexOf(': ');
         if (indiceDuePunti === -1) {
           wrapper.appendChild(testo('p', 'descrizione', segmento));
@@ -1591,7 +1816,7 @@
         var input = el('input', { type: 'radio', name: domanda.id });
         input.onchange = function () { segna(opzione); };
         riga.appendChild(input);
-        riga.appendChild(testo('span', null, opzione));
+        riga.appendChild(testo('span', null, etichettaOpzione(domanda, opzione)));
         wrapper.appendChild(riga);
       });
     } else if (domanda.tipo_campo === 'scelta_multipla' && domanda.opzioni) {
@@ -1610,7 +1835,7 @@
           segna(selezionate.slice());
         };
         riga.appendChild(input);
-        riga.appendChild(testo('span', null, opzione));
+        riga.appendChild(testo('span', null, etichettaOpzione(domanda, opzione)));
         wrapper.appendChild(riga);
       });
       wrapper.appendChild(avvisoMassimo);
@@ -1619,13 +1844,13 @@
       select.appendChild(el('option', { value: '' }));
       domanda.opzioni.forEach(function (opzione) {
         var opt = el('option', { value: opzione });
-        opt.textContent = opzione;
+        opt.textContent = etichettaOpzione(domanda, opzione);
         select.appendChild(opt);
       });
       select.onchange = function () { segna(select.value); };
       wrapper.appendChild(select);
     } else if (domanda.chiave_destinazione === 'indirizzo_evento') {
-      var inputIndirizzo = el('input', { type: 'text', placeholder: domanda.placeholder || '', autocomplete: 'off' });
+      var inputIndirizzo = el('input', { type: 'text', placeholder: trD(domanda, 'placeholder') || '', autocomplete: 'off' });
       inputIndirizzo.oninput = function () { segna(inputIndirizzo.value); };
       var listaSuggerimenti = el('ul', { class: 'suggerimenti-indirizzo' });
       listaSuggerimenti.style.display = 'none';
@@ -1669,7 +1894,7 @@
         : domanda.tipo_campo === 'data' ? 'date'
         : domanda.tipo_campo === 'orario' ? 'time'
         : 'text';
-      var input2 = el('input', { type: tipoInput, placeholder: domanda.placeholder || '' });
+      var input2 = el('input', { type: tipoInput, placeholder: trD(domanda, 'placeholder') || '' });
       input2.oninput = function () { segna(input2.value); };
       var icona = iconaCampo(domanda);
       if (icona) {
@@ -1684,9 +1909,9 @@
     }
 
     if (domanda.descrizione && domanda.tipo_campo !== 'dati_bonifico') {
-      wrapper.appendChild(testo('p', 'descrizione', domanda.descrizione));
+      wrapper.appendChild(testo('p', 'descrizione', trD(domanda, 'descrizione')));
       if (domanda.tipo_campo === 'note' || domanda.tipo_campo === 'informativo') {
-        var testoDaCopiare = domanda.descrizione;
+        var testoDaCopiare = trD(domanda, 'descrizione');
         var copiaDescrizione = el('button', { type: 'button', class: 'copia-descrizione' });
         copiaDescrizione.textContent = 'Copia';
         copiaDescrizione.onclick = function () {
@@ -1708,7 +1933,7 @@
     return el('div', { class: 'riga-icona' }, [
       el('div', { class: 'cerchio-icona', html: ICONE[nomeIcona] || ICONE.persona }),
       el('div', {}, [
-        testo('div', 'riga-icona-label', label.toUpperCase()),
+        testo('div', 'riga-icona-label', t(label).toUpperCase()),
         testo('div', 'riga-icona-valore', valore),
       ]),
     ]);
@@ -2025,7 +2250,7 @@
               : selezionati.filter(function (v) { return v !== op; });
             applicaTettoSelezioni(caselleEditor, selezionati, massimoEditor, avvisoEditor);
           };
-          var label = el('label', { for: id }, [check, document.createTextNode(' ' + op)]);
+          var label = el('label', { for: id }, [check, document.createTextNode(' ' + etichettaOpzione(domandaOriginale, op))]);
           box.appendChild(label);
         });
         applicaTettoSelezioni(caselleEditor, selezionati, massimoEditor, avvisoEditor);
@@ -2036,7 +2261,7 @@
         var select = el('select', {});
         opzioni.forEach(function (op) {
           var opt = el('option', { value: op });
-          opt.textContent = op;
+          opt.textContent = etichettaOpzione(domandaOriginale, op);
           if (op === r.risposta) opt.selected = true;
           select.appendChild(opt);
         });
@@ -2090,12 +2315,13 @@
       var domandaOriginale = (p.domande_snapshot || []).find(function (d) { return d.id === r.domanda_id; });
       var contenitoreRiga = el('div', {});
       var riga = el('div', { class: 'riga-dettaglio' });
-      riga.appendChild(testo('span', null, r.testo_domanda));
+      riga.appendChild(testo('span', null, domandaOriginale ? trD(domandaOriginale, 'testo') : r.testo_domanda));
       var valoreTesto = r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
         ? nomiPacchetto[r.risposta]
         : r.tipo_campo === 'data' && typeof r.risposta === 'string'
           ? formattaDataConGiorno(r.risposta)
-          : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : String(r.risposta || '—'));
+          : Array.isArray(r.risposta) ? r.risposta.map(function (v) { return etichettaOpzione(domandaOriginale, v); }).join(', ')
+          : (typeof r.risposta === 'object' ? JSON.stringify(r.risposta) : etichettaOpzione(domandaOriginale, String(r.risposta || '—')));
       var valore = testo('span', 'valore', valoreTesto);
       riga.appendChild(valore);
 
@@ -2287,7 +2513,7 @@
       function testoStatoBambini(numero, confermatoIl) {
         if (confermatoIl) {
           var d = new Date(confermatoIl);
-          var quando = isNaN(d.getTime()) ? '' : d.toLocaleString('it-IT', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+          var quando = isNaN(d.getTime()) ? '' : d.toLocaleString(LOCALE, { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
           return 'Numero confermato: ' + numero + ' bambini' + (quando ? ' (il ' + quando + ')' : '') + '.';
         }
         if (numero) {
@@ -2378,7 +2604,7 @@
       bottoneAnnulla.textContent = 'Richiedi l\'annullamento';
       var erroreAnnulla = testo('p', 'errore', '');
       bottoneAnnulla.onclick = function () {
-        if (!confirm('Vuoi richiedere l\'annullamento di questa prenotazione? La titolare dovrà confermarlo prima che sia effettivo.')) return;
+        if (!confirm(t('Vuoi richiedere l\'annullamento di questa prenotazione? La titolare dovrà confermarlo prima che sia effettivo.'))) return;
         chiama('richiedi_annullamento', { token_personale: tokenPersonale })
           .then(function () {
             bottoneAnnulla.textContent = 'Richiesta inviata ✓';
@@ -2442,6 +2668,9 @@
   // aprendo il link, prima ancora di decidere se prenotare.
   function renderSceltaIniziale(link) {
     app.innerHTML = '';
+    if (link && link.intestazione_scelta) {
+      app.appendChild(testo('h1', 'titolo-form intestazione-scelta', link.intestazione_scelta));
+    }
     if (link && link.immagine_preventivo_url) {
       var immaginePreventivo = el('img', {
         class: 'immagine-preventivo',
@@ -2476,6 +2705,18 @@
         window.location.href = '/' + link.bottone_secondario_url_token;
       };
       app.appendChild(bottoneSecondario);
+    }
+
+    // Collaborazioni con wedding planner in inglese: anche il catalogo bimbi è un PDF da aprire, sotto
+    // i due pulsanti di prenotazione (prima bimbi, poi adulti).
+    if (link && link.catalogo_bimbi_pdf_url) {
+      var bottonePdfBimbi = el('button', { class: 'pulsante secondario' });
+      bottonePdfBimbi.style.marginTop = '10px';
+      bottonePdfBimbi.textContent = link.catalogo_bimbi_pdf_testo_bottone || 'Apri PDF bimbi';
+      bottonePdfBimbi.onclick = function () {
+        window.open(link.catalogo_bimbi_pdf_url, '_blank');
+      };
+      app.appendChild(bottonePdfBimbi);
     }
 
     // Richiesto da Greta per Jiyu Wedding: la seconda scelta (servizi per adulti) ha un catalogo a
@@ -2578,6 +2819,7 @@
 
   // ============================================================
 
+  function avvia() {
   if (tokenPersonaleDaUrl) {
     // Link personale esplicito (?p=...): apre sempre direttamente quella prenotazione, comprese
     // le annullate — è il link "di riserva" condiviso apposta per quella prenotazione specifica.
@@ -2603,6 +2845,15 @@
   } else {
     app.innerHTML = '';
     app.appendChild(testo('p', 'errore', 'Link non valido.'));
+  }
+  }
+
+  // Prima di mostrare qualunque schermata serve sapere la lingua del link (italiano di default: se la
+  // richiesta fallisce si procede come sempre, e le schermate seguenti mostreranno l'errore).
+  if (urlToken) {
+    chiama('carica_link', { url_token: urlToken }).then(impostaLingua).catch(function () {}).then(avvia);
+  } else {
+    avvia();
   }
 })();
   </script>
