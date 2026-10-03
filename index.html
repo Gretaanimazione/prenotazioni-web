@@ -1071,6 +1071,57 @@
     app.appendChild(form);
     aggiornaVisibilitaCondizionali();
 
+    // Link "regalo del mese": la scelta del regalo compare solo dopo che il numero di telefono è stato
+    // riconosciuto tra i contatti raccolti dalle animatrici (e non ancora usato). Il controllo vero lo
+    // rifà comunque il server all'invio: questo serve solo a guidare la cliente.
+    if (link.verifica_numero_regalo) {
+      var domTelefono = domande.filter(function (d) { return d.chiave_destinazione === 'cliente_telefono'; })[0];
+      var domRegalo = domande.filter(function (d) { return d.chiave_destinazione === 'regalo_del_mese'; })[0];
+      if (domTelefono && domRegalo) {
+        var wrapTelefono = wrapperPerId[domTelefono.id];
+        var wrapRegalo = wrapperPerId[domRegalo.id];
+        var inputTelefono = wrapTelefono.querySelector('input');
+        var esitoNumero = testo('p', 'descrizione', '');
+        wrapTelefono.appendChild(esitoNumero);
+        var timerNumero = null;
+        var nascondiRegalo = function () {
+          wrapRegalo.style.display = 'none';
+          delete risposte[domRegalo.id];
+        };
+        var controllaNumero = function () {
+          var valoreControllato = inputTelefono.value;
+          if (valoreControllato.replace(/\D/g, '').length < 9) {
+            esitoNumero.className = 'descrizione';
+            esitoNumero.textContent = '';
+            nascondiRegalo();
+            return;
+          }
+          chiama('verifica_numero_regalo', { url_token: urlToken, telefono: valoreControllato }).then(function (esito) {
+            if (inputTelefono.value !== valoreControllato) return;
+            if (esito && esito.riconosciuto) {
+              esitoNumero.className = 'descrizione';
+              esitoNumero.textContent = 'Numero riconosciuto ✓ Scegli il tuo regalo qui sotto.';
+              wrapRegalo.style.display = '';
+            } else {
+              esitoNumero.className = 'errore';
+              esitoNumero.textContent = 'Questo numero non risulta tra quelli lasciati alla festa, oppure il regalo è già stato usato. Controlla di aver scritto lo stesso numero.';
+              nascondiRegalo();
+            }
+          }).catch(function (err) {
+            esitoNumero.className = 'errore';
+            esitoNumero.textContent = err.message;
+            nascondiRegalo();
+          });
+        };
+        nascondiRegalo();
+        inputTelefono.addEventListener('input', function () {
+          clearTimeout(timerNumero);
+          timerNumero = setTimeout(controllaNumero, 700);
+        });
+        if (inputTelefono.value) controllaNumero();
+      }
+    }
+
     // Nasconde/mostra le domande con "mostra_se_domanda_id" in base alla risposta corrente della
     // domanda da cui dipendono — e dimentica la risposta già data se torna nascosta, così non
     // viene inviata una risposta irrilevante rimasta dietro le quinte.
