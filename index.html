@@ -2820,7 +2820,9 @@
       var bottoneSecondario = el('button', { class: 'pulsante-titolo secondario-tema' });
       bottoneSecondario.textContent = link.bottone_secondario_testo;
       bottoneSecondario.onclick = function () {
-        window.location.href = '/' + link.bottone_secondario_url_token;
+        // ?nuova=1: apre direttamente il modulo del secondo link, senza ripassare dalla sua schermata
+        // iniziale (stessi pulsanti e cataloghi già visti qui).
+        window.location.href = '/' + link.bottone_secondario_url_token + '?nuova=1';
       };
       app.appendChild(bottoneSecondario);
     }
@@ -2925,6 +2927,10 @@
     // le annullate — è il link "di riserva" condiviso apposta per quella prenotazione specifica.
     tokenPersonale = tokenPersonaleDaUrl;
     avviaVistaPersonale();
+  } else if (urlToken && params.get('nuova') === '1') {
+    // Arrivo dal pulsante "nuova prenotazione" di un altro link (es. adulti dal link bimbi): si parte
+    // subito dal modulo.
+    avviaModulo();
   } else if (urlToken) {
     var tokenSalvati = leggiTokenPersonali();
     if (tokenSalvati.length === 1) {
