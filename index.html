@@ -973,6 +973,16 @@
     "Richiedi l'annullamento": 'Request cancellation',
     "Vuoi richiedere l'annullamento di questa prenotazione? La titolare dovrà confermarlo prima che sia effettivo.": 'Do you want to request the cancellation of this booking? The owner will have to confirm it before it takes effect.',
     'Registra': 'Record',
+    "Note per l'animatrice": 'Notes for the entertainer',
+    "Scrivi qui tutto ciò che può esserle utile: citofono, parcheggio, referente in sala, richieste particolari. Puoi cambiarle fino all'inizio della festa.": 'Write here anything that may be useful to them: doorbell, parking, contact person at the venue, special requests. You can change it until the event starts.',
+    'Salva le note': 'Save notes',
+    'Note salvate ✓': 'Notes saved ✓',
+    "Messaggi vocali per l'animatrice": 'Voice messages for the entertainer',
+    'Hai altre informazioni importanti da dirle a voce? Registra un messaggio: lo ascolterà prima della festa.': 'Do you have other important information to tell them by voice? Record a message: they will listen to it before the event.',
+    'Registra un nuovo messaggio vocale': 'Record a new voice message',
+    'Premi Registra, poi Stop, riascolta e premi Salva audio. Infine premi "Invia il messaggio vocale".': 'Press Record, then Stop, listen back and press Save audio. Finally press "Send the voice message".',
+    'Invia il messaggio vocale': 'Send the voice message',
+    'Messaggio vocale registrato ✓': 'Voice message recorded ✓',
     'Salva audio': 'Save audio',
     'Cancella': 'Cancel',
     'Audio salvato ✓': 'Audio saved ✓',
@@ -1004,6 +1014,7 @@
   var EN_REGOLE = [
     [/^Numero confermato: (\d+) bambini(?: \(il (.+)\))?\.$/, function (m) { return 'Number confirmed: ' + m[1] + ' children' + (m[2] ? ' (on ' + m[2] + ')' : '') + '.'; }],
     [/^Numero indicato finora: (\d+) bambini \(non ancora confermato in modo definitivo\)\.$/, function (m) { return 'Number entered so far: ' + m[1] + ' children (not yet confirmed as final).'; }],
+    [/^Hai già aggiunto (\d+) (messaggio vocale|messaggi vocali) dopo la prenotazione\. Puoi aggiungerne altri\.$/, function (m) { return 'You have already added ' + m[1] + (m[1] === '1' ? ' voice message' : ' voice messages') + ' after booking. You can add more.'; }],
     [/^Foto caricata: (.+)$/, function (m) { return 'Photo uploaded: ' + m[1]; }],
     [/^Ricevuta caricata: (.+)$/, function (m) { return 'Receipt uploaded: ' + m[1]; }],
     [/^Hai scelto il massimo consentito \((\d+)\)\. Per cambiare scelta, togli prima una spunta\.$/, function (m) { return 'You have chosen the maximum allowed (' + m[1] + '). To change your choice, untick one first.'; }],
@@ -1751,6 +1762,7 @@
           var base64 = String(reader.result).split(',')[1] || '';
           chiama('carica_audio_risposta', {
             url_token: urlToken,
+            token_personale: tokenPersonale || undefined,
             contenuto_base64: base64,
             tipo_mime: blobAudioRegistrato.type,
           }).then(function (esito) {
@@ -2316,7 +2328,9 @@
       var contenitoreRiga = el('div', {});
       var riga = el('div', { class: 'riga-dettaglio' });
       riga.appendChild(testo('span', null, domandaOriginale ? trD(domandaOriginale, 'testo') : r.testo_domanda));
-      var valoreTesto = r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
+      var valoreTesto = r.tipo_campo === 'audio'
+        ? (r.risposta ? 'Messaggio vocale registrato ✓' : '—')
+        : r.tipo_campo === 'pacchetto' && nomiPacchetto[r.risposta]
         ? nomiPacchetto[r.risposta]
         : r.tipo_campo === 'data' && typeof r.risposta === 'string'
           ? formattaDataConGiorno(r.risposta)
@@ -2563,6 +2577,75 @@
       sezioneBambini.appendChild(salvaBambini);
       sezioneBambini.appendChild(erroreBambini);
       app.appendChild(sezioneBambini);
+    }
+
+
+    // Note per l'animatrice e messaggi vocali in più: si possono cambiare/aggiungere fino all'inizio
+    // della festa, anche negli ultimi 4 giorni, e senza approvazione (richiesta di Greta) — sono
+    // informazioni di servizio per chi lavora all'evento.
+    if (!eventoIniziato) {
+      var sezioneNote = el('div', { class: 'sezione' });
+      sezioneNote.appendChild(testo('h2', 'titolo-form', 'Note per l\'animatrice'));
+      sezioneNote.appendChild(testo('p', 'istruzioni', 'Scrivi qui tutto ciò che può esserle utile: citofono, parcheggio, referente in sala, richieste particolari. Puoi cambiarle fino all\'inizio della festa.'));
+      var areaNote = el('textarea', {});
+      areaNote.value = p.informazioni_da_sapere || '';
+      sezioneNote.appendChild(areaNote);
+      var bottoneNote = el('button', { class: 'pulsante secondario' });
+      bottoneNote.style.marginTop = '10px';
+      bottoneNote.textContent = 'Salva le note';
+      var erroreNote = testo('p', 'errore', '');
+      bottoneNote.onclick = function () {
+        bottoneNote.disabled = true;
+        erroreNote.textContent = '';
+        chiama('aggiorna_note', { token_personale: tokenPersonale, testo: areaNote.value })
+          .then(function () {
+            p.informazioni_da_sapere = areaNote.value.trim() || null;
+            bottoneNote.textContent = 'Note salvate ✓';
+            setTimeout(function () { bottoneNote.textContent = 'Salva le note'; bottoneNote.disabled = false; }, 2500);
+          })
+          .catch(function (err) {
+            erroreNote.textContent = err.message;
+            bottoneNote.disabled = false;
+          });
+      };
+      sezioneNote.appendChild(bottoneNote);
+      sezioneNote.appendChild(erroreNote);
+      app.appendChild(sezioneNote);
+
+      var sezioneAudioExtra = el('div', { class: 'sezione' });
+      sezioneAudioExtra.appendChild(testo('h2', 'titolo-form', 'Messaggi vocali per l\'animatrice'));
+      var nAudio = p.numero_audio_aggiunti || 0;
+      sezioneAudioExtra.appendChild(testo('p', 'istruzioni', nAudio > 0
+        ? 'Hai già aggiunto ' + nAudio + (nAudio === 1 ? ' messaggio vocale' : ' messaggi vocali') + ' dopo la prenotazione. Puoi aggiungerne altri.'
+        : 'Hai altre informazioni importanti da dirle a voce? Registra un messaggio: lo ascolterà prima della festa.'));
+      var valoriAudio = {};
+      var bottoneAudio = el('button', { class: 'pulsante secondario' });
+      var erroreAudioExtra = testo('p', 'errore', '');
+      bottoneAudio.style.marginTop = '10px';
+      bottoneAudio.textContent = 'Invia il messaggio vocale';
+      bottoneAudio.disabled = true;
+      var campoAudio = renderCampo(
+        { id: '__audio_nuovo', tipo_campo: 'audio', testo: 'Registra un nuovo messaggio vocale', descrizione: 'Premi Registra, poi Stop, riascolta e premi Salva audio. Infine premi "Invia il messaggio vocale".', obbligatoria: false },
+        [],
+        valoriAudio,
+        function () { bottoneAudio.disabled = !valoriAudio['__audio_nuovo']; }
+      );
+      bottoneAudio.onclick = function () {
+        var percorsoAudio = valoriAudio['__audio_nuovo'];
+        if (!percorsoAudio) return;
+        bottoneAudio.disabled = true;
+        erroreAudioExtra.textContent = '';
+        chiama('aggiungi_audio', { token_personale: tokenPersonale, percorso: percorsoAudio })
+          .then(function () { avviaVistaPersonale(); })
+          .catch(function (err) {
+            erroreAudioExtra.textContent = err.message;
+            bottoneAudio.disabled = false;
+          });
+      };
+      sezioneAudioExtra.appendChild(campoAudio);
+      sezioneAudioExtra.appendChild(bottoneAudio);
+      sezioneAudioExtra.appendChild(erroreAudioExtra);
+      app.appendChild(sezioneAudioExtra);
     }
 
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
