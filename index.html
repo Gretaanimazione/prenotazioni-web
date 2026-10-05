@@ -2762,7 +2762,36 @@
       });
       app.appendChild(immaginePreventivo);
     }
+    // Link con "cataloghi prima dei pulsanti" (es. Casale Amelia): prima i due cataloghi da aprire,
+    // poi i due pulsanti di prenotazione. Negli altri link l'ordine resta quello di sempre.
+    var cataloghiPrima = !!(link && link.cataloghi_prima_dei_pulsanti);
+    function aggiungiPdfBimbi() {
+      if (!(link && link.catalogo_bimbi_pdf_url)) return;
+      var bottonePdfBimbi = el('button', { class: 'pulsante secondario' });
+      bottonePdfBimbi.style.marginTop = '10px';
+      bottonePdfBimbi.textContent = link.catalogo_bimbi_pdf_testo_bottone || 'Apri PDF bimbi';
+      bottonePdfBimbi.onclick = function () {
+        window.open(link.catalogo_bimbi_pdf_url, '_blank');
+      };
+      app.appendChild(bottonePdfBimbi);
+    }
+    function aggiungiPdfAdulti() {
+      if (!(link && link.catalogo_adulti_pdf_url)) return;
+      var bottonePdfAdulti = el('button', { class: 'pulsante secondario' });
+      bottonePdfAdulti.style.marginTop = '10px';
+      bottonePdfAdulti.textContent = link.catalogo_adulti_pdf_testo_bottone || 'Apri PDF adulti';
+      bottonePdfAdulti.onclick = function () {
+        window.open(link.catalogo_adulti_pdf_url, '_blank');
+      };
+      app.appendChild(bottonePdfAdulti);
+    }
+    if (cataloghiPrima) {
+      aggiungiPdfBimbi();
+      aggiungiPdfAdulti();
+    }
+
     var bottoneNuova = el('button', { class: 'pulsante-titolo' });
+    if (cataloghiPrima) bottoneNuova.style.marginTop = '22px';
     bottoneNuova.textContent = (link && link.bottone_primario_testo) || 'Fai una nuova prenotazione';
     bottoneNuova.onclick = function () { avviaModulo(); };
     app.appendChild(bottoneNuova);
@@ -2790,29 +2819,11 @@
       app.appendChild(bottoneSecondario);
     }
 
-    // Collaborazioni con wedding planner in inglese: anche il catalogo bimbi è un PDF da aprire, sotto
-    // i due pulsanti di prenotazione (prima bimbi, poi adulti).
-    if (link && link.catalogo_bimbi_pdf_url) {
-      var bottonePdfBimbi = el('button', { class: 'pulsante secondario' });
-      bottonePdfBimbi.style.marginTop = '10px';
-      bottonePdfBimbi.textContent = link.catalogo_bimbi_pdf_testo_bottone || 'Apri PDF bimbi';
-      bottonePdfBimbi.onclick = function () {
-        window.open(link.catalogo_bimbi_pdf_url, '_blank');
-      };
-      app.appendChild(bottonePdfBimbi);
-    }
-
-    // Richiesto da Greta per Jiyu Wedding: la seconda scelta (servizi per adulti) ha un catalogo a
-    // più pagine, meglio come PDF da aprire a parte invece che tutto in pagina. Testo del tasto
-    // personalizzabile per link (richiesto per Villa Renoir), 'Apri PDF adulti' di default.
-    if (link && link.catalogo_adulti_pdf_url) {
-      var bottonePdfAdulti = el('button', { class: 'pulsante secondario' });
-      bottonePdfAdulti.style.marginTop = '10px';
-      bottonePdfAdulti.textContent = link.catalogo_adulti_pdf_testo_bottone || 'Apri PDF adulti';
-      bottonePdfAdulti.onclick = function () {
-        window.open(link.catalogo_adulti_pdf_url, '_blank');
-      };
-      app.appendChild(bottonePdfAdulti);
+    // Cataloghi sotto i pulsanti (comportamento di sempre): prima bimbi (link in inglese e simili),
+    // poi adulti (Jiyu Wedding, Villa Renoir...).
+    if (!cataloghiPrima) {
+      aggiungiPdfBimbi();
+      aggiungiPdfAdulti();
     }
 
     var oppure = testo('p', 'istruzioni', 'Oppure, se hai già prenotato:');
