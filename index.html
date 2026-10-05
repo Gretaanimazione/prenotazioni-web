@@ -1067,11 +1067,11 @@
 
   // Testo/descrizione/segnaposto di una domanda e etichetta di una sua opzione, nella lingua del link.
   function trD(domanda, campo) {
-    var tr = LINGUA === 'en' && TRAD && TRAD[domanda.id];
+    var tr = TRAD && TRAD[domanda.id];
     return (tr && tr[campo]) || domanda[campo];
   }
   function etichettaOpzione(domanda, opzione) {
-    var tr = LINGUA === 'en' && TRAD && TRAD[domanda && domanda.id];
+    var tr = TRAD && TRAD[domanda && domanda.id];
     if (tr && tr.opzioni && domanda.opzioni) {
       var i = domanda.opzioni.indexOf(opzione);
       if (i >= 0 && tr.opzioni[i]) return tr.opzioni[i];
@@ -1093,7 +1093,13 @@
   }
   var osservatoreLingua = null;
   function impostaLingua(link) {
-    if (!link || link.lingua !== 'en') return;
+    if (!link) return;
+    // Link in italiano con etichette diverse dai valori salvati (es. prezzi accanto alle opzioni, come
+    // Casale Amelia): le etichette stanno in traduzioni, i valori salvati restano senza prezzo.
+    if (link.lingua !== 'en') {
+      if (link.traduzioni) TRAD = link.traduzioni;
+      return;
+    }
     LINGUA = 'en';
     LOCALE = 'en-GB';
     TRAD = link.traduzioni || {};
