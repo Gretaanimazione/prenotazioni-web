@@ -2049,6 +2049,18 @@
         renderVistaPersonale(p, []);
       });
     }).catch(function (err) {
+      // Bug reale segnalato da Greta: un cliente con una festa di qualche settimana prima, aperto
+      // di nuovo il link per prenotare, si ritrovava solo "Link non valido o non più
+      // disponibile" — il token salvato su questo dispositivo era scaduto (le prenotazioni si
+      // chiudono 7 giorni dopo la festa) e la pagina non lo scartava, quindi nessun modo di fare una
+      // nuova prenotazione. Un token scaduto preso dalla memoria del dispositivo (non dal link ?p=
+      // esplicito) viene tolto e si riparte dalla scelta iniziale, come nell'elenco prenotazioni.
+      if (urlToken && !tokenPersonaleDaUrl && tokenPersonale) {
+        rimuoviTokenPersonale(tokenPersonale);
+        tokenPersonale = null;
+        avviaSceltaIniziale();
+        return;
+      }
       app.innerHTML = '';
       app.appendChild(testo('p', 'errore', err.message));
     });
