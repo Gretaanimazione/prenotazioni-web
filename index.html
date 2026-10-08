@@ -1992,14 +1992,6 @@
     });
     box.appendChild(scheda);
 
-    var busta = el('div', { class: 'box-busta' });
-    busta.appendChild(el('div', { class: 'icona-busta', html: ICONE.busta }));
-    var p1 = el('p');
-    p1.appendChild(document.createTextNode('Il link che ti è stato mandato per messaggio ti permette di rivedere o modificare la tua prenotazione.'));
-    p1.appendChild(el('span', { class: 'enfasi' }, [document.createTextNode('Ricliccalo quando vuoi, tornerai alla tua prenotazione!')]));
-    busta.appendChild(p1);
-    box.appendChild(busta);
-
     // Le mail automatiche finiscono spesso nello spam (soprattutto su iCloud): lo si dice subito,
     // su richiesta di Greta. Per le prenotazioni la cui conferma parte solo dopo (pacchetto su misura,
     // approvazione manuale) non ha senso dire "a breve".
@@ -2011,6 +2003,14 @@
       : 'Ti arriverà a breve una mail di conferma. Potrebbe finire nello spam (posta indesiderata): controlla lì e segnala la mail come sicura, così non perderai le comunicazioni successive.';
     bustaMail.appendChild(pMail);
     box.appendChild(bustaMail);
+
+    var busta = el('div', { class: 'box-busta' });
+    busta.appendChild(el('div', { class: 'icona-busta', html: ICONE.busta }));
+    var p1 = el('p');
+    p1.appendChild(document.createTextNode('Il link che ti è stato mandato per messaggio ti permette di rivedere o modificare la tua prenotazione.'));
+    p1.appendChild(el('span', { class: 'enfasi' }, [document.createTextNode('Ricliccalo quando vuoi, tornerai alla tua prenotazione!')]));
+    busta.appendChild(p1);
+    box.appendChild(busta);
 
     if (notaConferma) {
       var notaBox = el('div', { class: 'box-busta' });
