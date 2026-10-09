@@ -921,6 +921,11 @@
     'La tua festa è in buone mani.': 'Your event is in good hands.',
     'Il link che ti è stato mandato per messaggio ti permette di rivedere o modificare la tua prenotazione.': 'The link you were sent lets you review or change your booking.',
     'Ricliccalo quando vuoi, tornerai alla tua prenotazione!': 'Click it again whenever you like to return to your booking!',
+    'Oggi è il giorno della festa! Se l\'animatrice fa fatica a trovarti, invia qui la tua posizione attuale: le arriva una notifica e può raggiungerti subito.': 'Today is the day of your event! If the entertainer has trouble finding you, send your current location here: she gets a notification and can reach you right away.',
+    'Invia la mia posizione attuale': 'Send my current location',
+    'Invia di nuovo la posizione': 'Send my location again',
+    'Sto cercando la tua posizione…': 'Finding your location…',
+    'Non riesco a leggere la tua posizione: consenti l\'accesso alla posizione al browser e riprova.': 'I cannot read your location: please allow location access in your browser and try again.',
     'Ti arriverà a breve una mail di conferma. Potrebbe finire nello spam (posta indesiderata): controlla lì e segnala la mail come sicura, così non perderai le comunicazioni successive.': 'A confirmation email will reach you shortly. It may end up in your spam (junk) folder: please check there and mark the email as safe, so you do not miss any further messages.',
     'Quando sarà pronta ti arriverà una mail di conferma. Potrebbe finire nello spam (posta indesiderata): controlla lì e segnala la mail come sicura, così non perderai le comunicazioni successive.': 'A confirmation email will reach you as soon as it is ready. It may end up in your spam (junk) folder: please check there and mark the email as safe, so you do not miss any further messages.',
     'Se in futuro usi un telefono diverso, questo è un link di riserva:': 'If you use a different phone in future, this is a backup link:',
@@ -2193,6 +2198,49 @@
     if (p.stato_prenotazione === 'annullata') {
       app.appendChild(testo('p', 'errore', 'Questa prenotazione è stata annullata.'));
       return;
+    }
+
+    // Il giorno della festa la cliente puo' inviare la sua posizione attuale all'animatrice (come
+    // "Posizione attuale" di WhatsApp): richiesta di Greta. La pagina offre il pulsante solo quando
+    // il server dice che e' il giorno dell'evento (p.puo_inviare_posizione); ogni invio avvisa le
+    // animatrici convocate, che dalla convocazione aprono la posizione nella mappa.
+    if (p.puo_inviare_posizione && tokenPersonale) {
+      var boxPosizione = el('div', { class: 'box-busta' });
+      boxPosizione.appendChild(testo('p', '', 'Oggi è il giorno della festa! Se l\'animatrice fa fatica a trovarti, invia qui la tua posizione attuale: le arriva una notifica e può raggiungerti subito.'));
+      var esitoPosizione = testo('p', 'avviso-bozza', '');
+      var oraPosizione = function (iso) {
+        return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      };
+      if (p.posizione_inviata_il) esitoPosizione.textContent = '✓ Posizione inviata alle ' + oraPosizione(p.posizione_inviata_il);
+      var bottonePosizione = el('button', { class: 'pulsante' });
+      bottonePosizione.textContent = 'Invia la mia posizione attuale';
+      bottonePosizione.onclick = function () {
+        if (!navigator.geolocation) {
+          esitoPosizione.textContent = 'Il tuo browser non permette di inviare la posizione.';
+          return;
+        }
+        bottonePosizione.disabled = true;
+        esitoPosizione.textContent = 'Sto cercando la tua posizione…';
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          chiama('invia_posizione', {
+            token_personale: tokenPersonale,
+            latitudine: pos.coords.latitude,
+            longitudine: pos.coords.longitude,
+            precisione: pos.coords.accuracy,
+          }).then(function (r) {
+            esitoPosizione.textContent = '✓ Posizione inviata alle ' + oraPosizione(r.inviata_il) + '. L\'animatrice è stata avvisata.';
+            bottonePosizione.textContent = 'Invia di nuovo la posizione';
+          }).catch(function (err) {
+            esitoPosizione.textContent = err.message;
+          }).then(function () { bottonePosizione.disabled = false; });
+        }, function () {
+          esitoPosizione.textContent = 'Non riesco a leggere la tua posizione: consenti l\'accesso alla posizione al browser e riprova.';
+          bottonePosizione.disabled = false;
+        }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+      };
+      boxPosizione.appendChild(bottonePosizione);
+      boxPosizione.appendChild(esitoPosizione);
+      app.appendChild(boxPosizione);
     }
 
     // Campi che l'amministratrice ha reso modificabili dalla cliente (stessa whitelist di
