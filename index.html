@@ -1443,6 +1443,19 @@
         if (wrapperMancante) wrapperMancante.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
+      // Bug reale (prenotazione di Jessica Gargani): "jessica.gargani" senza @ e dominio veniva
+      // accettato, quindi la mail di conferma non poteva partire. Si controlla il formato qui.
+      var domandaEmail = null;
+      domande.forEach(function (d) { if (d.chiave_destinazione === 'cliente_email') domandaEmail = d; });
+      var valoreEmail = domandaEmail ? String(risposte[domandaEmail.id] || '').trim() : '';
+      if (domandaEmail && valoreEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valoreEmail)) {
+        errore.textContent = LINGUA === 'en'
+          ? 'Please enter a valid email address (e.g. name@example.com).'
+          : 'Inserisci un indirizzo email valido (per esempio nome@esempio.it).';
+        var wrapperEmail = wrapperPerId[domandaEmail.id];
+        if (wrapperEmail) wrapperEmail.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       bottone.disabled = true;
       errore.textContent = '';
       chiama('invia', {
