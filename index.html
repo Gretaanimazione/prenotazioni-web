@@ -923,6 +923,8 @@
     'Ricliccalo quando vuoi, tornerai alla tua prenotazione!': 'Click it again whenever you like to return to your booking!',
     'Oggi è il giorno della festa! Se l\'animatrice fa fatica a trovarti, invia qui la tua posizione attuale: le arriva una notifica e può raggiungerti subito.': 'Today is the day of your event! If the entertainer has trouble finding you, send your current location here: she gets a notification and can reach you right away.',
     'Invia la mia posizione attuale': 'Send my current location',
+    'Il tuo invito di compleanno: giralo alle mamme e agli invitati su WhatsApp.': 'Your birthday invitation: share it with the other parents and guests on WhatsApp.',
+    'Scarica l\'invito': 'Download the invitation',
     'Invia di nuovo la posizione': 'Send my location again',
     'Sto cercando la tua posizione…': 'Finding your location…',
     'Non riesco a leggere la tua posizione: consenti l\'accesso alla posizione al browser e riprova.': 'I cannot read your location: please allow location access in your browser and try again.',
@@ -2241,6 +2243,26 @@
       boxPosizione.appendChild(bottonePosizione);
       boxPosizione.appendChild(esitoPosizione);
       app.appendChild(boxPosizione);
+    }
+
+    // Invito di compleanno (compleanni dei bambini con il nome del festeggiato): lo stesso che arriva nella
+    // mail di conferma, sempre aggiornato ai dati della prenotazione, da scaricare e girare su WhatsApp.
+    var haNomeFesteggiato = (p.risposte_cliente || []).some(function (r) {
+      return r.chiave_destinazione === 'nome_festeggiato' && r.risposta;
+    });
+    if (p.tema === 'compleanno_bimbi' && haNomeFesteggiato && tokenPersonale) {
+      var urlInvito = API_URL.replace(/\/prenota$/, '/invito') + '?p=' + encodeURIComponent(tokenPersonale);
+      var boxInvito = el('div', { class: 'box-busta' });
+      boxInvito.appendChild(testo('p', '', 'Il tuo invito di compleanno: giralo alle mamme e agli invitati su WhatsApp.'));
+      var imgInvito = el('img', { src: urlInvito, alt: 'Invito di compleanno' });
+      imgInvito.style.cssText = 'width:100%;max-width:420px;border-radius:12px;display:block;margin:10px auto;';
+      imgInvito.onerror = function () { boxInvito.style.display = 'none'; };
+      boxInvito.appendChild(imgInvito);
+      var scaricaInvito = el('a', { href: urlInvito + '&scarica=1', class: 'pulsante' });
+      scaricaInvito.textContent = "Scarica l'invito";
+      scaricaInvito.style.cssText = 'display:block;text-align:center;text-decoration:none;';
+      boxInvito.appendChild(scaricaInvito);
+      app.appendChild(boxInvito);
     }
 
     // Campi che l'amministratrice ha reso modificabili dalla cliente (stessa whitelist di
