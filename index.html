@@ -925,6 +925,7 @@
     'Invia la mia posizione attuale': 'Send my current location',
     'Il tuo invito di compleanno: giralo alle mamme e agli invitati su WhatsApp.': 'Your birthday invitation: share it with the other parents and guests on WhatsApp.',
     'Scarica l\'invito': 'Download the invitation',
+    'Scarica la foto': 'Download the photo',
     'Invia di nuovo la posizione': 'Send my location again',
     'Sto cercando la tua posizione…': 'Finding your location…',
     'Non riesco a leggere la tua posizione: consenti l\'accesso alla posizione al browser e riprova.': 'I cannot read your location: please allow location access in your browser and try again.',
@@ -2260,8 +2261,9 @@
       imgInvito.onerror = function () { boxInvito.style.display = 'none'; };
       boxInvito.appendChild(imgInvito);
       var scaricaInvito = el('a', { href: urlInvito + '&scarica=1', class: 'pulsante' });
-      scaricaInvito.textContent = "Scarica l'invito";
+      scaricaInvito.textContent = 'Scarica la foto';
       scaricaInvito.style.cssText = 'display:block;text-align:center;text-decoration:none;';
+      attivaScaricaFoto(scaricaInvito, urlInvito + '&scarica=1');
       boxInvito.appendChild(scaricaInvito);
       app.appendChild(boxInvito);
     }
@@ -3031,6 +3033,30 @@
 
   // ============================================================
 
+  // "Scarica la foto": su iPhone/iPad un normale download finisce in "File", non nella galleria; con il foglio di
+  // condivisione c'e' "Salva immagine". Altrove (Android, computer) e' un normale download.
+  function attivaScaricaFoto(link, urlConScarica) {
+    link.addEventListener('click', function (ev) {
+      var iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!iOS || !window.fetch || !navigator.share) return;
+      ev.preventDefault();
+      var testoOriginale = link.textContent;
+      link.textContent = 'Un attimo…';
+      fetch(urlConScarica).then(function (r) { return r.blob(); }).then(function (blob) {
+        var file = new File([blob], 'invito-compleanno.jpg', { type: 'image/jpeg' });
+        link.textContent = testoOriginale;
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file] }).catch(function () {});
+        }
+        window.location.href = urlConScarica;
+      }).catch(function () {
+        link.textContent = testoOriginale;
+        window.location.href = urlConScarica;
+      });
+    });
+  }
+
   // Pagina solo dell'invito di compleanno (link della mail di conferma): mostra l'invito e il tasto per scaricarlo.
   function avviaPaginaInvito() {
     app.innerHTML = '';
@@ -3047,9 +3073,11 @@
     };
     box.appendChild(img);
     var scarica = el('a', { href: urlInvito + '&scarica=1', class: 'pulsante' });
-    scarica.textContent = "Scarica l'invito";
+    scarica.textContent = 'Scarica la foto';
     scarica.style.cssText = 'display:block;text-align:center;text-decoration:none;';
+    attivaScaricaFoto(scarica, urlInvito + '&scarica=1');
     box.appendChild(scarica);
+    box.appendChild(testo('p', 'istruzioni', 'Cliccando, la foto dell\'invito si salva nella galleria del tuo telefono.'));
     var vedi = el('a', { href: '?p=' + encodeURIComponent(tokenPersonaleDaUrl) });
     vedi.textContent = 'Vedi la tua prenotazione';
     vedi.style.cssText = 'display:block;text-align:center;margin-top:14px;';
