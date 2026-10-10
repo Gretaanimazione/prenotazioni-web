@@ -3031,8 +3031,36 @@
 
   // ============================================================
 
+  // Pagina solo dell'invito di compleanno (link della mail di conferma): mostra l'invito e il tasto per scaricarlo.
+  function avviaPaginaInvito() {
+    app.innerHTML = '';
+    var urlInvito = API_URL.replace(/\/prenota$/, '/invito') + '?p=' + encodeURIComponent(tokenPersonaleDaUrl);
+    var box = el('div', { class: 'box-busta' });
+    box.appendChild(testo('h2', '', 'Il tuo invito di compleanno in omaggio'));
+    box.appendChild(testo('p', '', 'Scaricalo e giralo alle mamme e agli invitati su WhatsApp.'));
+    var img = el('img', { src: urlInvito, alt: 'Invito di compleanno' });
+    img.style.cssText = 'width:100%;max-width:420px;border-radius:12px;display:block;margin:10px auto;';
+    img.onerror = function () {
+      img.style.display = 'none';
+      scarica.style.display = 'none';
+      box.appendChild(testo('p', 'errore', 'Non riesco a mostrare l\'invito in questo momento: riprova tra poco.'));
+    };
+    box.appendChild(img);
+    var scarica = el('a', { href: urlInvito + '&scarica=1', class: 'pulsante' });
+    scarica.textContent = "Scarica l'invito";
+    scarica.style.cssText = 'display:block;text-align:center;text-decoration:none;';
+    box.appendChild(scarica);
+    var vedi = el('a', { href: '?p=' + encodeURIComponent(tokenPersonaleDaUrl) });
+    vedi.textContent = 'Vedi la tua prenotazione';
+    vedi.style.cssText = 'display:block;text-align:center;margin-top:14px;';
+    box.appendChild(vedi);
+    app.appendChild(box);
+  }
+
   function avvia() {
-  if (tokenPersonaleDaUrl) {
+  if (tokenPersonaleDaUrl && params.get('invito') === '1') {
+    avviaPaginaInvito();
+  } else if (tokenPersonaleDaUrl) {
     // Link personale esplicito (?p=...): apre sempre direttamente quella prenotazione, comprese
     // le annullate — è il link "di riserva" condiviso apposta per quella prenotazione specifica.
     tokenPersonale = tokenPersonaleDaUrl;
