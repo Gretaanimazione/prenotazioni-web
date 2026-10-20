@@ -2071,7 +2071,10 @@
   // Vista personale (da token personale ?p=)
   // ============================================================
 
+  var ultimoCaricamentoVista = 0;
+
   function avviaVistaPersonale() {
+    ultimoCaricamentoVista = 0;
     app.innerHTML = '';
     app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
 
@@ -2169,6 +2172,7 @@
   }
 
   function renderVistaPersonale(p, pacchetti) {
+    ultimoCaricamentoVista = Date.now();
     app.innerHTML = '';
 
     var nomiPacchetto = {};
@@ -3124,6 +3128,24 @@
     box.appendChild(vedi);
     app.appendChild(box);
   }
+
+  // Rientro nella pagina personale (il telefono riprende la scheda rimasta aperta, tasto "indietro", link della mail
+  // aperto di nuovo sulla stessa scheda): senza questo si vedeva ancora la versione di prima di una modifica
+  // approvata nel frattempo. Si ricarica solo se la vista e' ferma da qualche secondo e non si sta scrivendo.
+  function ricaricaSeVistaPersonaleVecchia(forza) {
+    if (!tokenPersonaleDaUrl || !ultimoCaricamentoVista) return;
+    if (!forza && Date.now() - ultimoCaricamentoVista < 15000) return;
+    if (document.querySelector('.editor-inline')) return;
+    var campi = document.querySelectorAll('textarea, input[type=text], input[type=tel], input[type=email], input[type=number]');
+    for (var k = 0; k < campi.length; k++) { if (campi[k].value) return; }
+    avviaVistaPersonale();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') ricaricaSeVistaPersonaleVecchia(false);
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) ricaricaSeVistaPersonaleVecchia(true);
+  });
 
   function avvia() {
   if (tokenPersonaleDaUrl && params.get('invito') === '1') {
