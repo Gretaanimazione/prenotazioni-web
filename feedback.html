@@ -49,6 +49,9 @@
   .conferma-icona { width: 84px; height: 84px; margin: 28px auto 16px; border-radius: 50%; background: var(--verde); display: flex; align-items: center; justify-content: center; }
   .conferma-icona svg { width: 42px; height: 42px; color: var(--verde-scuro); }
   .conferma p { font-size: 16px; line-height: 1.6; margin: 0; }
+  .avviso-negativo { background: #fdecea; border: 2px solid var(--errore); border-radius: 16px; padding: 14px 16px; margin: 18px 0 4px; text-align: center; }
+  .avviso-negativo strong { display: block; font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; color: var(--errore); margin-bottom: 4px; }
+  .avviso-negativo span { font-size: 14.5px; line-height: 1.5; color: var(--cioccolato-scuro); }
   .nascosto { display: none; }
 </style>
 </head>
@@ -125,6 +128,11 @@
   function renderModulo(info) {
     app.innerHTML = '';
     app.appendChild(intestazione());
+    // In cima: questo e' il questionario per chi vuole segnalare un problema, non per la recensione positiva.
+    app.appendChild(el('div', { class: 'avviso-negativo' }, [
+      el('strong', { testo: 'Questionario negativo' }),
+      el('span', { testo: "Se vuoi fare una recensione positiva, chiudi questo questionario e clicca l'altro link nel messaggio di Greta." })
+    ]));
     app.appendChild(el('h1', { testo: "Com'è andata la festa?" }));
 
     var intro = 'Grazie per averci scelto! ';
