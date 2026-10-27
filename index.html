@@ -54,16 +54,16 @@
 
   /* 🥂 Intrattenimento adulti: sofisticato, notturno/dorato */
   body.tema-intrattenimento_adulti {
-    --rosa-chiara: #66535f;
+    --rosa-chiara: #755f72;
     --rosa: #caa15a;
     --rosa-scura: #9c7a3e;
     --oro: #d8b878;
     --menta: #8a6a4a;
-    --crema: #4e3e4c;
-    --superficie: #5b4a59;
-    --testo: #f6ede6;
+    --crema: #5a4758;
+    --superficie: #6a5568;
+    --testo: #fff9f3;
     --testo-muto: #e0d2d7;
-    --bordo: #7b6671;
+    --bordo: #8b7482;
     --bordo-tratteggiato: #8a6a4a;
     --danger: #e08a93;
     --bagliore-1: rgba(154, 110, 74, 0.3);
@@ -203,6 +203,10 @@
   .decorazione-halloween { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
+  /* Titoli in oro chiaro: l'oro scuro di prima si leggeva male sullo sfondo prugna. */
+  body.tema-intrattenimento_adulti .titolo-form,
+  body.tema-intrattenimento_adulti .titolo-script-rosa,
+  body.tema-intrattenimento_adulti .chiusura-script { color: #f8e4b4; text-shadow: 0 1px 6px rgba(40, 20, 36, 0.45); }
   body.tema-intrattenimento_adulti .decorazione-palloncini { display: none; }
   body.tema-intrattenimento_adulti .decorazione-swirl { display: block; }
   .decorazione-anelli { display: none; text-align: center; margin: 14px 0 0; opacity: 0.8; }
