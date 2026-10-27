@@ -2830,18 +2830,23 @@
   }
 
   function avviaModuloDaBozza(p) {
-    chiama('pacchetti_pubblici', {}).then(function (pacchetti) {
-      renderModuloBozza(p, pacchetti);
-    }).catch(function () {
-      renderModuloBozza(p, []);
+    // Una bozza riaperta (stesso telefono, stesso link) deve usare le domande ATTUALI del link, non quelle
+    // di quando e' stata iniziata: dopo una modifica al modulo (es. nuovo servizio o nuova domanda
+    // dell'orario) chi riprendeva una bozza vecchia continuava a vedere il modulo di prima. Le risposte gia'
+    // scritte restano (sono legate all'id della domanda).
+    var linkAttuale = chiama('carica_link', { url_token: urlToken }).catch(function () { return null; });
+    var elencoPacchetti = chiama('pacchetti_pubblici', {}).catch(function () { return []; });
+    Promise.all([elencoPacchetti, linkAttuale]).then(function (esiti) {
+      renderModuloBozza(p, esiti[0], esiti[1]);
     });
   }
 
-  function renderModuloBozza(p, pacchetti) {
+  function renderModuloBozza(p, pacchetti, linkAttuale) {
+    var domandeAttuali = linkAttuale && Array.isArray(linkAttuale.domande) && linkAttuale.domande.length ? linkAttuale.domande : null;
     var link = {
       titolo: p.titolo_link_snapshot,
       istruzioni: p.istruzioni_link_snapshot,
-      domande: p.domande_snapshot || [],
+      domande: domandeAttuali || p.domande_snapshot || [],
     };
     renderModulo(link, pacchetti);
   }
