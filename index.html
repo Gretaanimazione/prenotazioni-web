@@ -535,6 +535,23 @@
   .card-codice { font-weight: 700; }
   .card-data { color: var(--testo-muto); font-size: 14px; margin-top: 2px; }
   .card-stato { font-size: 13px; margin-top: 6px; display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--crema); }
+  .media-piu {
+    display: inline-flex; align-items: center; gap: 10px; width: auto;
+    padding: 8px 16px 8px 8px; font-size: 15px;
+  }
+  .media-piu .piu-cerchio {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accento, #6f4e37); color: #fff; font-size: 22px; line-height: 1; font-weight: 600;
+  }
+  .media-lista { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .media-lista li {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px; font-size: 14px;
+    border: 1px solid var(--bordo); border-radius: 10px; background: var(--superficie);
+  }
+  .media-lista .media-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .media-lista .media-stato { color: var(--testo-secondario, inherit); opacity: 0.8; font-size: 13px; }
+  .media-lista button { border: 0; background: none; color: var(--danger, #b3261e); font-size: 13px; padding: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -999,6 +1016,16 @@
     "Messaggi vocali per l'animatrice": 'Voice messages for the entertainer',
     'Hai altre informazioni importanti da dirle a voce? Registra un messaggio: lo ascolterà prima della festa.': 'Do you have other important information to tell them by voice? Record a message: they will listen to it before the event.',
     'Registra un nuovo messaggio vocale': 'Record a new voice message',
+    'Aggiungi foto o video': 'Add photos or videos',
+    'Caricato ✓': 'Uploaded ✓',
+    'Togli': 'Remove',
+    "Foto e video per l'animatrice": 'Photos and videos for the entertainer',
+    "Vuoi mostrarle qualcosa, come il costume, la location o l'allestimento? Aggiungi foto o video: li vedrà prima della festa. Video fino a 50 MB.": 'Would you like to show her something, like the costume, the venue or the decorations? Add photos or videos: she will see them before the event. Videos up to 50 MB.',
+    'Hai già aggiunto 1 file dopo la prenotazione. Puoi aggiungerne altri.': 'You have already added 1 file after booking. You can add more.',
+    'Scegli una foto o un video.': 'Please choose a photo or a video.',
+    'File troppo grande: il limite è 50 MB. Per un video più lungo accorcialo oppure mandalo su WhatsApp.': 'File too large: the limit is 50 MB. For a longer video, trim it or send it on WhatsApp.',
+    'Caricamento non riuscito: riprova.': 'Upload failed: please try again.',
+    'Connessione interrotta: riprova.': 'Connection lost: please try again.',
     'Premi Registra, poi Stop, riascolta e premi Salva audio. Infine premi "Invia il messaggio vocale".': 'Press Record, then Stop, listen back and press Save audio. Finally press "Send the voice message".',
     'Invia il messaggio vocale': 'Send the voice message',
     'Messaggio vocale registrato ✓': 'Voice message recorded ✓',
@@ -1034,6 +1061,7 @@
   var EN_REGOLE = [
     [/^Numero confermato: (\d+) bambini(?: \(il (.+)\))?\.$/, function (m) { return 'Number confirmed: ' + m[1] + ' children' + (m[2] ? ' (on ' + m[2] + ')' : '') + '.'; }],
     [/^Numero indicato finora: (\d+) bambini \(non ancora confermato in modo definitivo\)\.$/, function (m) { return 'Number entered so far: ' + m[1] + ' children (not yet confirmed as final).'; }],
+    [/^Hai già aggiunto (\d+) file dopo la prenotazione\. Puoi aggiungerne altri\.$/, function (m) { return 'You have already added ' + m[1] + (m[1] === '1' ? ' file' : ' files') + ' after booking. You can add more.'; }],
     [/^Hai già aggiunto (\d+) (messaggio vocale|messaggi vocali) dopo la prenotazione\. Puoi aggiungerne altri\.$/, function (m) { return 'You have already added ' + m[1] + (m[1] === '1' ? ' voice message' : ' voice messages') + ' after booking. You can add more.'; }],
     [/^Foto caricata: (.+)$/, function (m) { return 'Photo uploaded: ' + m[1]; }],
     [/^Ricevuta caricata: (.+)$/, function (m) { return 'Receipt uploaded: ' + m[1]; }],
@@ -1564,6 +1592,160 @@
     return nome ? ICONE[nome] : null;
   }
 
+  // ---- Foto e video per l'animatrice (tipo_campo 'media') -----------------------------------
+  // Il file va dritto al bucket privato con un URL di caricamento firmato (i video sono troppo
+  // grandi per passare in base64 dalla funzione): prima si chiede l'URL a 'crea_upload_media',
+  // poi si invia il file con una PUT. Le foto vengono ridotte (max 1920 px) prima dell'invio.
+  var MEDIA_LIMITE_BYTE = 50 * 1024 * 1024;
+  var MEDIA_ESTENSIONI = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif', mp4: 'video/mp4', mov: 'video/quicktime', m4v: 'video/mp4', webm: 'video/webm', '3gp': 'video/3gpp' };
+
+  function tipoMimeMedia(file) {
+    if (file.type) return file.type;
+    var m = /\.([a-z0-9]+)$/i.exec(file.name || '');
+    return (m && MEDIA_ESTENSIONI[m[1].toLowerCase()]) || '';
+  }
+
+  function riduciFoto(file, tipo) {
+    return new Promise(function (ok) {
+      if (!/^image\/(jpeg|png|webp)$/.test(tipo)) { ok({ blob: file, tipo: tipo }); return; }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var lato = Math.max(img.naturalWidth, img.naturalHeight);
+        var scala = Math.min(1, 1920 / lato);
+        if (scala === 1 && file.size < 3 * 1024 * 1024) { ok({ blob: file, tipo: tipo }); return; }
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.naturalWidth * scala);
+        canvas.height = Math.round(img.naturalHeight * scala);
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          if (blob && blob.size < file.size) ok({ blob: blob, tipo: 'image/jpeg' });
+          else ok({ blob: file, tipo: tipo });
+        }, 'image/jpeg', 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); ok({ blob: file, tipo: tipo }); };
+      img.src = url;
+    });
+  }
+
+  function inviaConProgresso(url, blob, tipo, onProgresso) {
+    return new Promise(function (ok, ko) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', url);
+      xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) onProgresso(Math.round(e.loaded * 100 / e.total));
+      };
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) ok();
+        else ko(new Error('Caricamento non riuscito: riprova.'));
+      };
+      xhr.onerror = function () { ko(new Error('Connessione interrotta: riprova.')); };
+      var dati = new FormData();
+      dati.append('cacheControl', '3600');
+      dati.append('', new Blob([blob], { type: tipo }));
+      xhr.send(dati);
+    });
+  }
+
+  // Restituisce il percorso nel bucket quando il file è stato caricato.
+  function caricaMediaCliente(file, onProgresso) {
+    var tipo = tipoMimeMedia(file);
+    if (!/^(image|video)\//.test(tipo)) {
+      return Promise.reject(new Error('Scegli una foto o un video.'));
+    }
+    var eFoto = /^image\//.test(tipo);
+    return (eFoto ? riduciFoto(file, tipo) : Promise.resolve({ blob: file, tipo: tipo })).then(function (pronto) {
+      if (pronto.blob.size > MEDIA_LIMITE_BYTE) {
+        throw new Error('File troppo grande: il limite è 50 MB. Per un video più lungo accorcialo oppure mandalo su WhatsApp.');
+      }
+      return chiama('crea_upload_media', {
+        url_token: urlToken,
+        token_personale: tokenPersonale || undefined,
+        tipo_mime: pronto.tipo,
+        dimensione: pronto.blob.size,
+      }).then(function (esito) {
+        return inviaConProgresso(esito.url_caricamento, pronto.blob, pronto.tipo, onProgresso).then(function () {
+          return esito.percorso;
+        });
+      });
+    });
+  }
+
+  // Il pulsante "+" con l'elenco dei file scelti. opzioni.perFile(percorso) (facoltativo) viene
+  // chiamata a ogni file caricato e può restituire una Promise (es. per salvarlo sulla prenotazione);
+  // opzioni.onCambia(percorsi) riceve l'elenco aggiornato dei file andati a buon fine.
+  function creaSelettoreMedia(opzioni) {
+    var contenitore = el('div', {});
+    var input = el('input', { type: 'file', accept: 'image/*,video/*', multiple: 'multiple' });
+    input.style.display = 'none';
+    var bottone = el('button', { type: 'button', class: 'pulsante secondario media-piu' });
+    var cerchio = el('span', { class: 'piu-cerchio' });
+    cerchio.textContent = '+';
+    bottone.appendChild(cerchio);
+    bottone.appendChild(testo('span', null, 'Aggiungi foto o video'));
+    var lista = el('ul', { class: 'media-lista' });
+    var errore = testo('p', 'errore', '');
+    var voci = [];
+
+    function aggiorna() {
+      if (opzioni.onCambia) {
+        opzioni.onCambia(voci.filter(function (v) { return v.percorso && !v.errore; }).map(function (v) { return v.percorso; }));
+      }
+    }
+
+    function aggiungiVoce(file) {
+      var voce = { percorso: null, errore: false };
+      voci.push(voce);
+      var riga = el('li', {});
+      var nome = testo('span', 'media-nome', (/^video\//.test(tipoMimeMedia(file)) ? '🎬 ' : '📷 ') + (file.name || ''));
+      var stato = testo('span', 'media-stato', 'Caricamento in corso…');
+      var togli = el('button', { type: 'button' });
+      togli.textContent = 'Togli';
+      togli.onclick = function () {
+        voci.splice(voci.indexOf(voce), 1);
+        lista.removeChild(riga);
+        aggiorna();
+      };
+      riga.appendChild(nome);
+      riga.appendChild(stato);
+      riga.appendChild(togli);
+      lista.appendChild(riga);
+      caricaMediaCliente(file, function (perc) { stato.textContent = perc + '%'; })
+        .then(function (percorso) {
+          voce.percorso = percorso;
+          return opzioni.perFile ? opzioni.perFile(percorso) : null;
+        })
+        .then(function () {
+          stato.textContent = 'Caricato ✓';
+          aggiorna();
+        })
+        .catch(function (err) {
+          voce.errore = true;
+          stato.textContent = '';
+          errore.textContent = err.message;
+          lista.removeChild(riga);
+          voci.splice(voci.indexOf(voce), 1);
+          aggiorna();
+        });
+    }
+
+    bottone.onclick = function () { input.click(); };
+    input.onchange = function () {
+      errore.textContent = '';
+      Array.prototype.slice.call(input.files || []).forEach(aggiungiVoce);
+      input.value = '';
+    };
+    contenitore.appendChild(input);
+    contenitore.appendChild(bottone);
+    contenitore.appendChild(lista);
+    contenitore.appendChild(errore);
+    return contenitore;
+  }
+
   function renderCampo(domanda, pacchetti, risposte, onCambia) {
     var wrapper = el('div', { class: 'campo' });
     var label = el('label', {});
@@ -1827,6 +2009,10 @@
       wrapper.appendChild(anteprimaAudio);
       wrapper.appendChild(azioniAudio);
       wrapper.appendChild(erroreAudio);
+    } else if (domanda.tipo_campo === 'media') {
+      wrapper.appendChild(creaSelettoreMedia({
+        onCambia: function (percorsi) { segna(percorsi); },
+      }));
     } else if (domanda.tipo_campo === 'note') {
       var area = el('textarea', { placeholder: trD(domanda, 'placeholder') || '' });
       area.oninput = function () { segna(area.value); };
@@ -2779,6 +2965,19 @@
       sezioneAudioExtra.appendChild(bottoneAudio);
       sezioneAudioExtra.appendChild(erroreAudioExtra);
       app.appendChild(sezioneAudioExtra);
+
+      var sezioneMediaExtra = el('div', { class: 'sezione' });
+      sezioneMediaExtra.appendChild(testo('h2', 'titolo-form', 'Foto e video per l\'animatrice'));
+      var nMedia = p.numero_media_aggiunti || 0;
+      sezioneMediaExtra.appendChild(testo('p', 'istruzioni', nMedia > 0
+        ? 'Hai già aggiunto ' + nMedia + ' file' + ' dopo la prenotazione. Puoi aggiungerne altri.'
+        : 'Vuoi mostrarle qualcosa, come il costume, la location o l\'allestimento? Aggiungi foto o video: li vedrà prima della festa. Video fino a 50 MB.'));
+      sezioneMediaExtra.appendChild(creaSelettoreMedia({
+        perFile: function (percorso) {
+          return chiama('aggiungi_media', { token_personale: tokenPersonale, percorso: percorso });
+        },
+      }));
+      app.appendChild(sezioneMediaExtra);
     }
 
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
