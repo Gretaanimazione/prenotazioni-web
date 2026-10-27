@@ -54,16 +54,16 @@
 
   /* 🥂 Intrattenimento adulti: sofisticato, notturno/dorato */
   body.tema-intrattenimento_adulti {
-    --rosa-chiara: #755f72;
+    --rosa-chiara: #8a7589;
     --rosa: #caa15a;
     --rosa-scura: #9c7a3e;
     --oro: #d8b878;
     --menta: #8a6a4a;
-    --crema: #5a4758;
-    --superficie: #6a5568;
-    --testo: #fff9f3;
-    --testo-muto: #e0d2d7;
-    --bordo: #8b7482;
+    --crema: #7d687b;
+    --superficie: #6c576a;
+    --testo: #ffffff;
+    --testo-muto: #f6eef2;
+    --bordo: #a08c9e;
     --bordo-tratteggiato: #8a6a4a;
     --danger: #e08a93;
     --bagliore-1: rgba(154, 110, 74, 0.3);
@@ -302,7 +302,12 @@
     color: var(--testo);
     font-family: inherit;
     box-shadow: 0 2px 8px rgba(214, 70, 123, 0.06);
+    max-width: 100%;
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
   }
+  .campo input[type=date], .campo input[type=time] { display: block; min-height: 50px; }
   .campo .campo-input-wrap input { padding-left: 46px; }
   .campo textarea { min-height: 90px; resize: vertical; }
   .suggerimenti-indirizzo {
