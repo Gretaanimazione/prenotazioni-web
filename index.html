@@ -4,6 +4,15 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Prenota con Greta Events</title>
+<!-- Aggiungibile alla schermata Home come app web: icona, nome e schermo intero (il manifest, con il link
+     giusto da riaprire, lo crea impostaWebApp() quando il link e' caricato). -->
+<link rel="apple-touch-icon" href="/icons/icona-180.png" />
+<link rel="icon" type="image/png" href="/icons/icona-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Greta Events" />
+<meta name="theme-color" content="#b08d57" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
@@ -1391,6 +1400,36 @@
     });
   }
 
+  // App web (schermata Home): nome breve in base al link (nei link di collaborazione "Greta × <nome>") e
+  // manifest creato al volo con start_url = questo link, cosi' l'icona sulla Home riapre proprio la
+  // pagina della wedding planner e non la home generica. Su iPhone vale soprattutto il titolo e l'icona.
+  function impostaWebApp(link) {
+    try {
+      var nome = 'Greta Events';
+      var m = link && link.intestazione_scelta ? /collaborazione con (.+)$/i.exec(link.intestazione_scelta) : null;
+      if (m) nome = 'Greta × ' + m[1].trim();
+      var metaTitolo = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (metaTitolo) metaTitolo.setAttribute('content', nome);
+      var base = location.origin;
+      var manifest = {
+        name: nome, short_name: m ? 'Greta × ' + m[1].trim().split(' ')[0] : 'Greta Events',
+        start_url: location.pathname + location.search, scope: '/', display: 'standalone',
+        background_color: '#fdf6ec', theme_color: '#b08d57',
+        icons: [
+          { src: base + '/icons/icona-192.png', sizes: '192x192', type: 'image/png' },
+          { src: base + '/icons/icona-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      };
+      var url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
+      var esistente = document.querySelector('link[rel="manifest"]');
+      if (esistente) esistente.remove();
+      var linkManifest = document.createElement('link');
+      linkManifest.rel = 'manifest';
+      linkManifest.href = url;
+      document.head.appendChild(linkManifest);
+    } catch (e) { /* l'app web e' solo un comfort: se non riesce, la pagina funziona lo stesso */ }
+  }
+
   // Applica la base grafica scelta dall'amministratrice per questo link (o fissata sulla
   // prenotazione al momento della bozza/invio). 'compleanno_bimbi' è il tema di default, definito
   // in :root, quindi non richiede alcuna classe.
@@ -1413,7 +1452,7 @@
     app.appendChild(testo('p', 'caricamento', 'Caricamento del modulo…'));
 
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
-      applicaTema(link.tema);
+      applicaTema(link.tema); impostaWebApp(link);
       chiama('pacchetti_pubblici', { url_token: urlToken }).then(function (pacchetti) {
         renderModulo(link, pacchetti);
       }).catch(function () {
@@ -3165,7 +3204,7 @@
     app.innerHTML = '';
     app.appendChild(testo('p', 'caricamento', 'Caricamento…'));
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
-      applicaTema(link.tema);
+      applicaTema(link.tema); impostaWebApp(link);
       renderSceltaIniziale(link);
     }).catch(function (err) {
       app.innerHTML = '';
