@@ -3175,6 +3175,9 @@
     app.innerHTML = '';
     if (link && link.intestazione_scelta) {
       app.appendChild(testo('h1', 'titolo-form intestazione-scelta', link.intestazione_scelta));
+      // Nei link di collaborazione l'avviso in cima (es. "prezzi netti, IVA a parte") va letto gia'
+      // sulla pagina iniziale, prima dei cataloghi e dei pulsanti.
+      if (link.istruzioni) app.appendChild(testo('p', 'istruzioni', link.istruzioni));
     }
     if (link && link.immagine_preventivo_url) {
       var immaginePreventivo = el('img', {
