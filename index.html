@@ -1400,19 +1400,17 @@
     });
   }
 
-  // App web (schermata Home): nome breve in base al link (nei link di collaborazione "Greta × <nome>") e
-  // manifest creato al volo con start_url = questo link, cosi' l'icona sulla Home riapre proprio la
-  // pagina della wedding planner e non la home generica. Su iPhone vale soprattutto il titolo e l'icona.
+  // App web (schermata Home): il nome resta sempre "Greta Events" (voluto da Greta, anche nei link di
+  // collaborazione); il manifest e' creato al volo con start_url = questo link, cosi' l'icona sulla Home
+  // riapre proprio la pagina della wedding planner e non la home generica.
   function impostaWebApp(link) {
     try {
       var nome = 'Greta Events';
-      var m = link && link.intestazione_scelta ? /collaborazione con (.+)$/i.exec(link.intestazione_scelta) : null;
-      if (m) nome = 'Greta × ' + m[1].trim();
       var metaTitolo = document.querySelector('meta[name="apple-mobile-web-app-title"]');
       if (metaTitolo) metaTitolo.setAttribute('content', nome);
       var base = location.origin;
       var manifest = {
-        name: nome, short_name: m ? 'Greta × ' + m[1].trim().split(' ')[0] : 'Greta Events',
+        name: nome, short_name: nome,
         start_url: location.pathname + location.search, scope: '/', display: 'standalone',
         background_color: '#fdf6ec', theme_color: '#b08d57',
         icons: [
