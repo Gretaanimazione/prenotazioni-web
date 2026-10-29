@@ -181,6 +181,33 @@
   body.tema-halloween .decorazione-halloween { display: block; }
   body.tema-halloween .titolo-form::before { content: "🎃 "; }
 
+
+  /* 🎭 Carnevale: viola, verde acqua e oro su fondo crema (catalogo Carnevale 2027) */
+  body.tema-carnevale {
+    --rosa-chiara: #f1e6f8;
+    --rosa: #7b2fa3;
+    --rosa-scura: #5a1f7c;
+    --oro: #d9a93a;
+    --menta: #17a398;
+    --crema: #fdf8ee;
+    --superficie: #ffffff;
+    --testo: #33203f;
+    --testo-muto: #7d6a8a;
+    --bordo: #e8dcef;
+    --bordo-tratteggiato: #d9a93a;
+    --danger: #c4455c;
+    --bagliore-1: rgba(123, 47, 163, 0.10);
+    --bagliore-2: rgba(23, 163, 152, 0.14);
+    --globo1-a: #f3dc9c; --globo1-b: #d9a93a; /* oro */
+    --globo2-a: #c79be0; --globo2-b: #7b2fa3; /* viola */
+    --globo3-a: #8fe0d4; --globo3-b: #17a398; /* verde acqua */
+    --globo4-a: #f2a5cf; --globo4-b: #d0408c; /* magenta */
+    --globo5-a: #fffaf2; --globo5-b: #efe3cf; /* crema */
+  }
+  body.tema-carnevale .decorazione-palloncini { display: none; }
+  body.tema-carnevale .decorazione-carnevale { display: block; }
+  body.tema-carnevale .titolo-form::before { content: "🎭 "; }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -201,6 +228,7 @@
   .decorazione-magia { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-natale { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-halloween { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-carnevale { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
   /* Titoli in oro chiaro: l'oro scuro di prima si leggeva male sullo sfondo prugna. */
@@ -831,6 +859,63 @@
           <path d="M340 30 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.85" />
           <path d="M660 90 l2.5 7 7 2.5 -7 2.5 -2.5 7 -2.5 -7 -7 -2.5 7 -2.5 z" opacity="0.75" />
           <circle cx="420" cy="70" r="2.2" /><circle cx="600" cy="30" r="1.8" />
+        </g>
+      </svg>
+      <svg class="decorazione-carnevale" viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="gMascheraViola" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#b074d6" /><stop offset="1" stop-color="#5a1f7c" />
+          </linearGradient>
+          <linearGradient id="gMascheraAcqua" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5fd6c8" /><stop offset="1" stop-color="#0d7a72" />
+          </linearGradient>
+          <symbol id="mascheraCarnevale" viewBox="0 0 140 90">
+            <path d="M8 34 Q70 -6 132 34 Q130 70 100 74 Q82 76 70 62 Q58 76 40 74 Q10 70 8 34 Z
+                     M34 40 Q46 30 60 42 Q50 54 36 51 Z M106 40 Q94 30 80 42 Q90 54 104 51 Z"
+                  fill-rule="evenodd" />
+          </symbol>
+          <symbol id="piumaCarnevale" viewBox="0 0 30 90">
+            <path d="M15 88 Q-4 50 15 2 Q34 50 15 88 Z" />
+          </symbol>
+        </defs>
+
+        <!-- stelle filanti -->
+        <path d="M0 22 Q120 70 240 24 T500 28 T760 22 T1000 30" fill="none" stroke="#d9a93a" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+        <path d="M0 40 Q140 92 280 44 T540 46 T800 40 T1000 50" fill="none" stroke="#17a398" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+        <path d="M0 58 Q160 108 320 62 T600 64 T860 58 T1000 68" fill="none" stroke="#7b2fa3" stroke-width="3" stroke-linecap="round" opacity="0.55" />
+
+        <!-- maschera sinistra con piume -->
+        <g transform="translate(40 70)">
+          <use href="#piumaCarnevale" x="64" y="-52" width="30" height="90" fill="#d9a93a" transform="rotate(28 79 -7)" />
+          <use href="#piumaCarnevale" x="80" y="-48" width="30" height="90" fill="#17a398" transform="rotate(55 95 -3)" />
+          <use href="#piumaCarnevale" x="46" y="-44" width="26" height="80" fill="#d0408c" transform="rotate(5 59 -4)" />
+          <use href="#mascheraCarnevale" x="0" y="0" width="150" height="96" fill="url(#gMascheraViola)" stroke="#d9a93a" stroke-width="2.5" />
+        </g>
+        <!-- maschera destra, specchiata -->
+        <g transform="translate(960 70) scale(-1 1)">
+          <use href="#piumaCarnevale" x="64" y="-52" width="30" height="90" fill="#7b2fa3" transform="rotate(28 79 -7)" />
+          <use href="#piumaCarnevale" x="80" y="-48" width="30" height="90" fill="#d9a93a" transform="rotate(55 95 -3)" />
+          <use href="#piumaCarnevale" x="46" y="-44" width="26" height="80" fill="#17a398" transform="rotate(5 59 -4)" />
+          <use href="#mascheraCarnevale" x="0" y="0" width="150" height="96" fill="url(#gMascheraAcqua)" stroke="#d9a93a" stroke-width="2.5" />
+        </g>
+
+        <!-- coriandoli -->
+        <g>
+          <circle cx="250" cy="120" r="5" fill="#d0408c" /><circle cx="300" cy="150" r="4" fill="#17a398" />
+          <circle cx="360" cy="110" r="3.5" fill="#d9a93a" /><circle cx="430" cy="160" r="5" fill="#7b2fa3" />
+          <circle cx="570" cy="160" r="5" fill="#d9a93a" /><circle cx="640" cy="112" r="3.5" fill="#d0408c" />
+          <circle cx="700" cy="150" r="4" fill="#7b2fa3" /><circle cx="750" cy="120" r="5" fill="#17a398" />
+          <rect x="330" y="150" width="10" height="5" rx="1" fill="#7b2fa3" transform="rotate(30 335 152)" />
+          <rect x="480" y="125" width="10" height="5" rx="1" fill="#17a398" transform="rotate(-25 485 127)" />
+          <rect x="520" y="170" width="10" height="5" rx="1" fill="#d0408c" transform="rotate(50 525 172)" />
+          <rect x="680" y="180" width="10" height="5" rx="1" fill="#d9a93a" transform="rotate(-40 685 182)" />
+          <rect x="270" y="178" width="10" height="5" rx="1" fill="#d9a93a" transform="rotate(20 275 180)" />
+        </g>
+        <!-- stelline oro -->
+        <g fill="#d9a93a">
+          <path d="M395 80 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3 z" opacity="0.9" />
+          <path d="M610 84 l2.5 7 7 2.5 -7 2.5 -2.5 7 -2.5 -7 -7 -2.5 7 -2.5 z" opacity="0.85" />
+          <path d="M500 170 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" opacity="0.7" />
         </g>
       </svg>
       <div class="logo-riquadro">
