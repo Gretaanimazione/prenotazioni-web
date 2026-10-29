@@ -208,6 +208,12 @@
   body.tema-carnevale .decorazione-carnevale { display: block; }
   body.tema-carnevale .titolo-form::before { content: "🎭 "; }
 
+  /* Catalogo aperto direttamente in pagina (link con le pagine del catalogo come immagini) */
+  .catalogo-riga { display: flex; gap: 10px; margin-top: 10px; }
+  .catalogo-riga .pulsante { flex: 1; margin-top: 0; }
+  .catalogo-viewer { margin-top: 12px; }
+  .catalogo-viewer img { display: block; width: 100%; height: auto; margin-bottom: 12px; border-radius: 10px; border: 1px solid var(--bordo); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -3190,7 +3196,48 @@
     // Link con "cataloghi prima dei pulsanti" (es. Casale Amelia): prima i due cataloghi da aprire,
     // poi i due pulsanti di prenotazione. Negli altri link l'ordine resta quello di sempre.
     var cataloghiPrima = !!(link && link.cataloghi_prima_dei_pulsanti);
+    // Catalogo aperto direttamente in pagina: "Apri catalogo" mostra le pagine sotto i pulsanti, "Scarica PDF"
+    // (pulsante a parte) scarica il file. Se il link non ha le pagine come immagini, ritorna false e
+    // resta il vecchio pulsante unico che apre il PDF.
+    function aggiungiCatalogoInPagina(tipo) {
+      var pagine = link && link['catalogo_' + tipo + '_pagine_urls'];
+      if (!(pagine && pagine.length)) return false;
+      var pdfUrl = link['catalogo_' + tipo + '_pdf_url'];
+      var riga = el('div', { class: 'catalogo-riga' });
+      var viewer = el('div', { class: 'catalogo-viewer' });
+      viewer.style.display = 'none';
+      var apri = el('button', { class: 'pulsante secondario' });
+      apri.textContent = 'Apri catalogo ' + tipo;
+      var caricato = false;
+      apri.onclick = function () {
+        var aperto = viewer.style.display !== 'none';
+        if (aperto) {
+          viewer.style.display = 'none';
+          apri.textContent = 'Apri catalogo ' + tipo;
+          return;
+        }
+        if (!caricato) {
+          caricato = true;
+          for (var i = 0; i < pagine.length; i++) {
+            viewer.appendChild(el('img', { src: pagine[i], alt: 'Catalogo ' + tipo + ', pagina ' + (i + 1), loading: 'lazy' }));
+          }
+        }
+        viewer.style.display = 'block';
+        apri.textContent = 'Chiudi catalogo ' + tipo;
+      };
+      riga.appendChild(apri);
+      if (pdfUrl) {
+        var scarica = el('button', { class: 'pulsante secondario' });
+        scarica.textContent = link['catalogo_' + tipo + '_pdf_testo_bottone'] || 'Scarica PDF';
+        scarica.onclick = function () { window.location.href = pdfUrl; };
+        riga.appendChild(scarica);
+      }
+      app.appendChild(riga);
+      app.appendChild(viewer);
+      return true;
+    }
     function aggiungiPdfBimbi() {
+      if (aggiungiCatalogoInPagina('bimbi')) return;
       if (!(link && link.catalogo_bimbi_pdf_url)) return;
       var bottonePdfBimbi = el('button', { class: 'pulsante secondario' });
       bottonePdfBimbi.style.marginTop = '10px';
@@ -3201,6 +3248,7 @@
       app.appendChild(bottonePdfBimbi);
     }
     function aggiungiPdfAdulti() {
+      if (aggiungiCatalogoInPagina('adulti')) return;
       if (!(link && link.catalogo_adulti_pdf_url)) return;
       var bottonePdfAdulti = el('button', { class: 'pulsante secondario' });
       bottonePdfAdulti.style.marginTop = '10px';
