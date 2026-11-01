@@ -1155,7 +1155,7 @@
     'Catalogo': 'Catalogue',
     'copia non riuscita': 'copy failed',
     'Errore imprevisto.': 'Something went wrong. Please try again, or contact us on WhatsApp at +39 349 683 8756.',
-    'Numero riconosciuto ✓ Scegli il tuo regalo qui sotto.': 'Number recognised ✓ Choose your gift below.'
+    'Numero riconosciuto ✓ Scegli il tuo regalo dopo aver indicato la data della festa.': 'Number recognised ✓ Choose your gift below.'
   };
   // Frasi con parti variabili. Ogni regola: [espressione, funzione che costruisce la frase inglese].
   var EN_REGOLE = [
@@ -1517,7 +1517,7 @@
             if (inputTelefono.value !== valoreControllato) return;
             if (esito && esito.riconosciuto) {
               esitoNumero.className = 'descrizione';
-              esitoNumero.textContent = 'Numero riconosciuto ✓ Scegli il tuo regalo qui sotto.';
+              esitoNumero.textContent = 'Numero riconosciuto ✓ Scegli il tuo regalo dopo aver indicato la data della festa.';
               wrapRegalo.style.display = '';
             } else {
               esitoNumero.className = 'errore';
@@ -1558,6 +1558,8 @@
 
     function aggiornaVisibilitaCondizionali() {
       domande.forEach(function (domanda) {
+        var wrapperOpzioni = wrapperPerId[domanda.id];
+        if (wrapperOpzioni && wrapperOpzioni._aggiornaOpzioni) wrapperOpzioni._aggiornaOpzioni();
         if (!domanda.mostra_se_domanda_id) return;
         var wrapper = wrapperPerId[domanda.id];
         if (!wrapper) return;
@@ -2177,6 +2179,37 @@
         rigaBonifico.appendChild(bottoneCopiaRiga);
         wrapper.appendChild(rigaBonifico);
       });
+    } else if (domanda.tipo_campo === 'scelta_singola' && domanda.regali_per_mese) {
+      // Regali del mese: l'elenco dipende dal mese della data della festa (domanda indicata in
+      // mese_da_domanda_id). Ogni mese conserva i suoi regali; si aggiorna a ogni cambio data.
+      var contenitoreRegali = el('div', {});
+      wrapper.appendChild(contenitoreRegali);
+      var meseRegali = null;
+      wrapper._aggiornaOpzioni = function () {
+        var dataFesta = String(risposte[domanda.mese_da_domanda_id] || '');
+        var mese = /^\d{4}-\d{2}/.test(dataFesta) ? dataFesta.slice(0, 7) : '';
+        if (mese === meseRegali) return;
+        meseRegali = mese;
+        contenitoreRegali.innerHTML = '';
+        var lista = mese ? (domanda.regali_per_mese[mese] || []) : [];
+        if (risposte[domanda.id] !== undefined && lista.indexOf(risposte[domanda.id]) === -1) {
+          delete risposte[domanda.id];
+        }
+        if (!mese) {
+          contenitoreRegali.appendChild(testo('p', 'descrizione', 'Scegli prima la data della festa: qui compaiono i regali di quel mese.'));
+        } else if (lista.length === 0) {
+          contenitoreRegali.appendChild(testo('p', 'descrizione', 'I regali di questo mese non sono ancora disponibili: riprova tra qualche giorno.'));
+        }
+        lista.forEach(function (opzione) {
+          var riga = el('div', { class: 'opzioni-riga' });
+          var input = el('input', { type: 'radio', name: domanda.id });
+          input.onchange = function () { segna(opzione); };
+          riga.appendChild(input);
+          riga.appendChild(testo('span', null, opzione));
+          contenitoreRegali.appendChild(riga);
+        });
+      };
+      wrapper._aggiornaOpzioni();
     } else if (domanda.tipo_campo === 'scelta_singola' && domanda.opzioni) {
       domanda.opzioni.forEach(function (opzione) {
         var riga = el('div', { class: 'opzioni-riga' });
