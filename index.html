@@ -1583,6 +1583,11 @@
         // scelga qualcosa (bug reale: "Allega la ricevuta del pagamento" appariva da subito,
         // prima di scegliere il metodo di pagamento).
         if (domanda.mostra_se_negato) soddisfatta = gateRisposto && !soddisfatta;
+        // mostra_se_anche: seconda condizione che deve valere INSIEME alla prima (es. "orari della
+        // data 3" solo se la data 3 esiste E gli orari sono diversi per ogni data).
+        if (soddisfatta && domanda.mostra_se_anche) {
+          soddisfatta = valoreCombacia(domanda.mostra_se_anche.domanda_id, domanda.mostra_se_anche.valore);
+        }
         wrapper.style.display = soddisfatta ? '' : 'none';
         if (!soddisfatta) delete risposte[domanda.id];
       });
