@@ -2670,8 +2670,7 @@
       return String(valore);
     }
     function etichettaRichiestaDi(r) {
-      var mappata = CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1;
-      return r.testo_domanda + (!mappata && r.chiave_destinazione ? ' (da applicare a mano)' : '');
+      return r.testo_domanda;
     }
     var ETICHETTA_CAMPO_RICHIESTA = {
       inizio_evento: 'data/orario dell\'evento', tipo_evento: 'tipo di evento',
@@ -2752,6 +2751,129 @@
       return editor;
     }
 
+    // ---- Domande che dipendono da quella che la cliente sta cambiando ----
+    // Cambiando il pacchetto (o una risposta che apre altre domande, come "Durata Mini Party" o
+    // "Vuoi aggiungere extra?") compaiono domande nuove, con le stesse regole del modulo di
+    // prenotazione (mostra_se_*). Qui si calcola quali sono e si chiedono nello stesso editor,
+    // cosi' la richiesta arriva completa (bug reale: cambiato in Mini Party, nessuna domanda sui servizi).
+    var mappaAttuale = {};
+    (p.risposte_cliente || []).forEach(function (x) { mappaAttuale[x.domanda_id] = x.risposta; });
+    var domandeOrdinate = (p.domande_snapshot || []).slice().sort(function (a, b) { return (a.ordine || 0) - (b.ordine || 0); });
+    function rispostaVuota(v) {
+      return v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
+    }
+    function combaciaValore(mappa, idGate, richiesto) {
+      var g = mappa[idGate];
+      if (Array.isArray(richiesto)) {
+        return Array.isArray(g)
+          ? richiesto.some(function (v) { return g.indexOf(v) !== -1; })
+          : richiesto.indexOf(g) !== -1;
+      }
+      return Array.isArray(g) ? g.indexOf(richiesto) !== -1 : g === richiesto;
+    }
+    function calcolaVisibilita(mappaIniziale) {
+      var mappa = {};
+      Object.keys(mappaIniziale).forEach(function (k) { mappa[k] = mappaIniziale[k]; });
+      var visibili = {};
+      domandeOrdinate.forEach(function (dom) {
+        var vis = true;
+        if (dom.mostra_se_domanda_id) {
+          var ids = Array.isArray(dom.mostra_se_domanda_id) ? dom.mostra_se_domanda_id : [dom.mostra_se_domanda_id];
+          var gateRisposto = ids.some(function (id) { return !rispostaVuota(mappa[id]); });
+          var sodd = ids.some(function (id) { return combaciaValore(mappa, id, dom.mostra_se_valore); });
+          if (dom.mostra_se_negato) sodd = gateRisposto && !sodd;
+          if (sodd && dom.mostra_se_anche) sodd = combaciaValore(mappa, dom.mostra_se_anche.domanda_id, dom.mostra_se_anche.valore);
+          vis = sodd;
+        }
+        if (vis) visibili[dom.id] = true; else delete mappa[dom.id];
+      });
+      return { visibili: visibili, mappa: mappa };
+    }
+    function rigaDiDomanda(dom, valore) {
+      return { domanda_id: dom.id, testo_domanda: dom.testo, chiave_destinazione: dom.chiave_destinazione, tipo_campo: dom.tipo_campo, risposta: valore };
+    }
+    function creaDipendenze(rr) {
+      var stato = { valori: {}, campi: {}, box: el('div', { class: 'editor-dipendenze' }), primario: undefined };
+      function calcola(nuovoValore) {
+        var nuova = {};
+        Object.keys(mappaAttuale).forEach(function (k) { nuova[k] = mappaAttuale[k]; });
+        nuova[rr.domanda_id] = nuovoValore;
+        Object.keys(stato.valori).forEach(function (k) { nuova[k] = stato.valori[k]; });
+        var prima = calcolaVisibilita(mappaAttuale).visibili;
+        var dopo = calcolaVisibilita(nuova);
+        var daChiedere = domandeOrdinate.filter(function (dom) {
+          return dopo.visibili[dom.id] && !prima[dom.id] && dom.id !== rr.domanda_id
+            && TIPI_CAMPO_EDITABILI_INLINE.indexOf(dom.tipo_campo) !== -1 && rispostaVuota(mappaAttuale[dom.id]);
+        });
+        var daTogliere = domandeOrdinate.filter(function (dom) {
+          return prima[dom.id] && !dopo.visibili[dom.id] && dom.id !== rr.domanda_id && !rispostaVuota(mappaAttuale[dom.id]);
+        });
+        return { daChiedere: daChiedere, daTogliere: daTogliere };
+      }
+      function disegna(nuovoValore) {
+        var c = calcola(nuovoValore);
+        var ids = c.daChiedere.map(function (d) { return d.id; });
+        Object.keys(stato.campi).forEach(function (id) {
+          if (ids.indexOf(id) === -1) {
+            if (stato.campi[id].parentNode) stato.campi[id].parentNode.removeChild(stato.campi[id]);
+            delete stato.campi[id];
+            delete stato.valori[id];
+          }
+        });
+        c.daChiedere.forEach(function (dom) {
+          if (stato.campi[dom.id]) return;
+          var w = renderCampo(dom, pacchetti, stato.valori, function () { disegna(stato.primario); });
+          stato.campi[dom.id] = w;
+        });
+        // Ordine del modulo, non ordine di comparsa.
+        c.daChiedere.forEach(function (dom) { stato.box.appendChild(stato.campi[dom.id]); });
+        return c;
+      }
+      return {
+        box: stato.box,
+        collega: function (editor) {
+          var azioni = editor.querySelector('.editor-azioni');
+          editor.insertBefore(stato.box, azioni);
+          editor.addEventListener('change', function (ev) {
+            if (stato.box.contains(ev.target) || !editor._leggiValore) return;
+            stato.primario = editor._leggiValore();
+            disegna(stato.primario);
+          });
+        },
+        // Eccezione se mancano risposte: la cliente le compila nel riquadro e preme di nuovo.
+        prepara: function (nuovoValore) {
+          stato.primario = nuovoValore;
+          var c = disegna(nuovoValore);
+          for (var i = 0; i < c.daChiedere.length; i++) {
+            var d = c.daChiedere[i];
+            if (d.obbligatoria && rispostaVuota(stato.valori[d.id])) {
+              stato.box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              throw new Error('Compila anche le domande qui sotto, poi premi di nuovo "Invia richiesta".');
+            }
+          }
+          var extra = [];
+          c.daChiedere.forEach(function (dom) {
+            var v = stato.valori[dom.id];
+            if (rispostaVuota(v)) return;
+            var rv = rigaDiDomanda(dom, v);
+            extra.push({
+              campo: campoDellaRisposta(rv), valore_attuale: null, valore_richiesto: v,
+              etichetta: etichettaRichiestaDi(rv), testo_attuale: '', testo_richiesto: testoLeggibile(rv, v),
+            });
+          });
+          c.daTogliere.forEach(function (dom) {
+            var rv = rigaDiDomanda(dom, mappaAttuale[dom.id]);
+            extra.push({
+              campo: campoDellaRisposta(rv), valore_attuale: mappaAttuale[dom.id], valore_richiesto: null,
+              etichetta: etichettaRichiestaDi(rv), testo_attuale: testoLeggibile(rv, mappaAttuale[dom.id]),
+              testo_richiesto: '(tolta)',
+            });
+          });
+          return extra;
+        },
+      };
+    }
+
     function costruisceEditorInline(domandaOriginale, r, onSalva, onAnnulla) {
       var editor = el('div', { class: 'editor-inline' });
       var input;
@@ -2820,6 +2942,7 @@
         input = { leggiValore: function () { return testoInput.value; } };
       }
 
+      editor._leggiValore = input.leggiValore;
       var erroreEditor = testo('p', 'errore', '');
       var azioni = el('div', { class: 'editor-azioni' });
       var bottoneSalva = el('button', { class: 'pulsante secondario' });
@@ -2878,20 +3001,24 @@
         var bottoneModifica = el('button', { class: 'link-modifica' });
         bottoneModifica.textContent = 'Modifica';
         bottoneModifica.onclick = function () {
+          var dip = creaDipendenze(r);
           var editor = costruisceEditorInline(domandaOriginale, r, function (nuovoValore) {
+            var extraCampi;
+            try { extraCampi = dip.prepara(nuovoValore); } catch (e) { return Promise.reject(e); }
             return chiama('richiedi_modifica', {
               token_personale: tokenPersonale,
               campi_richiesti: [{
                 campo: campoRichiesta, valore_attuale: r.risposta, valore_richiesto: nuovoValore,
                 etichetta: etichettaRichiestaDi(r),
                 testo_attuale: testoLeggibile(r, r.risposta), testo_richiesto: testoLeggibile(r, nuovoValore),
-              }],
+              }].concat(extraCampi),
               nota_cliente: 'Modifica richiesta: "' + r.testo_domanda + '"',
             }).then(function () { avviaVistaPersonale(); });
           }, function () {
             contenitoreRiga.removeChild(editor);
             riga.style.display = '';
           });
+          dip.collega(editor);
           riga.style.display = 'none';
           contenitoreRiga.appendChild(editor);
         };
@@ -2986,20 +3113,24 @@
         var bottoneAggiungiScelta = el('button', { class: 'link-modifica' });
         bottoneAggiungiScelta.textContent = 'Aggiungi';
         bottoneAggiungiScelta.onclick = function () {
+          var dipVuoto = creaDipendenze(rVuota);
           var editorVuoto = costruisceEditorInline(dom, rVuota, function (nuovoValore) {
+            var extraCampiVuoto;
+            try { extraCampiVuoto = dipVuoto.prepara(nuovoValore); } catch (e) { return Promise.reject(e); }
             return chiama('richiedi_modifica', {
               token_personale: tokenPersonale,
               campi_richiesti: [{
                 campo: campoVuoto, valore_attuale: null, valore_richiesto: nuovoValore,
                 etichetta: etichettaRichiestaDi(rVuota),
                 testo_attuale: '', testo_richiesto: testoLeggibile(rVuota, nuovoValore),
-              }],
+              }].concat(extraCampiVuoto),
               nota_cliente: 'Aggiunta richiesta: "' + dom.testo + '"',
             }).then(function () { avviaVistaPersonale(); });
           }, function () {
             contenitoreVuoto.removeChild(editorVuoto);
             rigaVuota.style.display = '';
           });
+          dipVuoto.collega(editorVuoto);
           rigaVuota.style.display = 'none';
           contenitoreVuoto.appendChild(editorVuoto);
         };
