@@ -1101,7 +1101,7 @@
     'Salvato ✓': 'Saved ✓',
     'Inserisci il numero di bambini prima di salvare.': 'Please enter the number of children before saving.',
     'Hai bisogno di cambiare qualcosa?': 'Need to change something?',
-    'Per data, orario, indirizzo o gli altri campi qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.': 'For the date, time, address or the other fields above, use the "Change" button next to the line. Use this space only for notes or requests that are not about a specific field.',
+    'Per pacchetto, extra, data, orario, indirizzo o qualsiasi altra risposta qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.': 'For the package, extras, date, time, address or any other answer above, use the "Change" button next to the line. Use this space only for notes or requests that are not about a specific field.',
     'Hai già una richiesta di questo tipo in attesa di risposta.': 'You already have a request of this kind waiting for an answer.',
     'Scrivi qui cosa vorresti cambiare…': 'Write here what you would like to change…',
     'Scrivi cosa vorresti cambiare.': 'Please write what you would like to change.',
@@ -2646,10 +2646,33 @@
       'nome_festeggiato', 'indirizzo_evento', 'citta_evento', 'truccabimbi_o_tatuaggi',
       'importo_da_riscuotere_cliente', 'anticipo_richiesto', 'outfit_richiesta_cliente',
       'informazioni_da_sapere', 'eta_festeggiato', 'metodo_pagamento', 'extra_scelti',
+      'pacchetto_id', 'pacchetto_secondario_id', 'mascotte_scelta', 'allestimento_scelto', 'numero_postazioni',
     ];
     var TIPI_CAMPO_EDITABILI_INLINE = [
       'testo_libero', 'note', 'numerico', 'selezione_da_elenco', 'scelta_singola', 'scelta_multipla',
+      'pacchetto', 'data', 'orario',
     ];
+    // Su richiesta di una cliente che non riusciva a cambiare il pacchetto: si puo' chiedere di
+    // cambiare QUALSIASI risposta, non solo quelle con una colonna propria sull'evento. Le domande
+    // senza colonna viaggiano come "risposta:<id domanda>" (approvando si aggiorna la risposta
+    // salvata). Restano fuori solo i campi che hanno una sezione dedicata o non sono testo/scelte.
+    var TIPI_CAMPO_NON_MODIFICABILI = ['audio', 'media', 'foto', 'dati_bonifico', 'informativo', 'pacchetti_multipli'];
+    var CHIAVI_CON_SEZIONE_PROPRIA = ['numero_bambini', 'ricevuta_bonifico_path', 'data_evento', 'ora_evento'];
+    function campoDellaRisposta(r) {
+      return CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1
+        ? r.chiave_destinazione
+        : 'risposta:' + r.domanda_id;
+    }
+    function testoLeggibile(r, valore) {
+      if (valore === null || valore === undefined || valore === '') return '';
+      if (r.tipo_campo === 'pacchetto') return nomiPacchetto[valore] || String(valore);
+      if (Array.isArray(valore)) return valore.join(', ');
+      return String(valore);
+    }
+    function etichettaRichiestaDi(r) {
+      var mappata = CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1;
+      return r.testo_domanda + (!mappata && r.chiave_destinazione ? ' (da applicare a mano)' : '');
+    }
     var ETICHETTA_CAMPO_RICHIESTA = {
       inizio_evento: 'data/orario dell\'evento', tipo_evento: 'tipo di evento',
       tipo_location: 'tipo di location', cliente: 'nome di chi prenota',
@@ -2669,6 +2692,10 @@
       (r.campi_richiesti || []).forEach(function (c) { campiConRichiestaPendente[c.campo] = true; });
     });
     var etichetteRichiesteInAttesa = Object.keys(campiConRichiestaPendente).map(function (c) {
+      if (c.indexOf('risposta:') === 0) {
+        var trovata = (p.risposte_cliente || []).find(function (r) { return 'risposta:' + r.domanda_id === c; });
+        return trovata ? trovata.testo_domanda : 'altra risposta';
+      }
       return ETICHETTA_CAMPO_RICHIESTA[c] || c;
     });
 
@@ -2754,6 +2781,20 @@
         box.appendChild(avvisoEditor);
         editor.appendChild(box);
         input = { leggiValore: function () { return selezionati; } };
+      } else if (r.tipo_campo === 'pacchetto') {
+        var selectPacchetto = el('select', {});
+        (pacchetti || []).forEach(function (pacc) {
+          var optPacc = el('option', { value: pacc.id });
+          optPacc.textContent = pacc.nome;
+          if (pacc.id === r.risposta) optPacc.selected = true;
+          selectPacchetto.appendChild(optPacc);
+        });
+        editor.appendChild(selectPacchetto);
+        input = { leggiValore: function () { return selectPacchetto.value; } };
+      } else if (r.tipo_campo === 'data' || r.tipo_campo === 'orario') {
+        var inputDataOra = el('input', { type: r.tipo_campo === 'data' ? 'date' : 'time', value: typeof r.risposta === 'string' ? r.risposta : '' });
+        editor.appendChild(inputDataOra);
+        input = { leggiValore: function () { return inputDataOra.value; } };
       } else if (r.tipo_campo === 'selezione_da_elenco' || r.tipo_campo === 'scelta_singola') {
         var select = el('select', {});
         opzioni.forEach(function (op) {
@@ -2826,8 +2867,10 @@
 
       var eDataOOra = r.chiave_destinazione === 'data_evento' || r.chiave_destinazione === 'ora_evento';
 
-      var puoModificare = !p.sola_lettura && !campiConRichiestaPendente[r.chiave_destinazione]
-        && CHIAVI_MODIFICABILI_RICHIESTA.indexOf(r.chiave_destinazione) !== -1
+      var campoRichiesta = campoDellaRisposta(r);
+      var puoModificare = !p.sola_lettura && !campiConRichiestaPendente[campoRichiesta]
+        && CHIAVI_CON_SEZIONE_PROPRIA.indexOf(r.chiave_destinazione) === -1
+        && TIPI_CAMPO_NON_MODIFICABILI.indexOf(r.tipo_campo) === -1
         && TIPI_CAMPO_EDITABILI_INLINE.indexOf(r.tipo_campo) !== -1;
       var puoModificareDataOra = !p.sola_lettura && !campiConRichiestaPendente.inizio_evento && eDataOOra;
 
@@ -2838,7 +2881,11 @@
           var editor = costruisceEditorInline(domandaOriginale, r, function (nuovoValore) {
             return chiama('richiedi_modifica', {
               token_personale: tokenPersonale,
-              campi_richiesti: [{ campo: r.chiave_destinazione, valore_attuale: r.risposta, valore_richiesto: nuovoValore }],
+              campi_richiesti: [{
+                campo: campoRichiesta, valore_attuale: r.risposta, valore_richiesto: nuovoValore,
+                etichetta: etichettaRichiestaDi(r),
+                testo_attuale: testoLeggibile(r, r.risposta), testo_richiesto: testoLeggibile(r, nuovoValore),
+              }],
               nota_cliente: 'Modifica richiesta: "' + r.testo_domanda + '"',
             }).then(function () { avviaVistaPersonale(); });
           }, function () {
@@ -2867,7 +2914,7 @@
           contenitoreRiga.appendChild(editor);
         };
         riga.appendChild(bottoneModificaOra);
-      } else if (campiConRichiestaPendente[r.chiave_destinazione] || (eDataOOra && campiConRichiestaPendente.inizio_evento)) {
+      } else if (campiConRichiestaPendente[campoRichiesta] || (eDataOOra && campiConRichiestaPendente.inizio_evento)) {
         riga.appendChild(testo('span', 'istruzioni', 'Modifica in attesa'));
       }
 
@@ -2915,6 +2962,50 @@
         rigaMancante.appendChild(bottoneAggiungi);
         contenitoreRigaMancante.appendChild(rigaMancante);
         sezioneDettagli.appendChild(contenitoreRigaMancante);
+      });
+    }
+
+    // Pacchetto ed extra non scelti al momento della prenotazione (domanda saltata): offerti qui con
+    // "Aggiungi", come l'indirizzo, cosi' la cliente puo' sempre aggiungerli dopo.
+    if (!p.sola_lettura) {
+      var idDomandeRisposte = (p.risposte_cliente || []).map(function (r) { return r.domanda_id; });
+      (p.domande_snapshot || []).forEach(function (dom) {
+        var eExtra = dom.chiave_destinazione === 'extra_scelti';
+        var ePacchetto = dom.tipo_campo === 'pacchetto';
+        if (!eExtra && !ePacchetto) return;
+        if (idDomandeRisposte.indexOf(dom.id) !== -1) return;
+        var rVuota = {
+          domanda_id: dom.id, testo_domanda: dom.testo, chiave_destinazione: dom.chiave_destinazione,
+          tipo_campo: eExtra ? 'scelta_multipla' : 'pacchetto', risposta: eExtra ? [] : '',
+        };
+        var campoVuoto = campoDellaRisposta(rVuota);
+        if (campiConRichiestaPendente[campoVuoto]) return;
+        var contenitoreVuoto = el('div', {});
+        var rigaVuota = el('div', { class: 'riga-dettaglio' });
+        rigaVuota.appendChild(testo('span', null, trD(dom, 'testo') + ' (non scelto)'));
+        var bottoneAggiungiScelta = el('button', { class: 'link-modifica' });
+        bottoneAggiungiScelta.textContent = 'Aggiungi';
+        bottoneAggiungiScelta.onclick = function () {
+          var editorVuoto = costruisceEditorInline(dom, rVuota, function (nuovoValore) {
+            return chiama('richiedi_modifica', {
+              token_personale: tokenPersonale,
+              campi_richiesti: [{
+                campo: campoVuoto, valore_attuale: null, valore_richiesto: nuovoValore,
+                etichetta: etichettaRichiestaDi(rVuota),
+                testo_attuale: '', testo_richiesto: testoLeggibile(rVuota, nuovoValore),
+              }],
+              nota_cliente: 'Aggiunta richiesta: "' + dom.testo + '"',
+            }).then(function () { avviaVistaPersonale(); });
+          }, function () {
+            contenitoreVuoto.removeChild(editorVuoto);
+            rigaVuota.style.display = '';
+          });
+          rigaVuota.style.display = 'none';
+          contenitoreVuoto.appendChild(editorVuoto);
+        };
+        rigaVuota.appendChild(bottoneAggiungiScelta);
+        contenitoreVuoto.appendChild(rigaVuota);
+        sezioneDettagli.appendChild(contenitoreVuoto);
       });
     }
 
@@ -3149,7 +3240,7 @@
     // Richiesta di modifica ai dati principali (oltre 14gg si modifica diretto, sotto si passa da qui)
     var sezioneRichiesta = el('div', { class: 'sezione' });
     sezioneRichiesta.appendChild(testo('h2', 'titolo-form', 'Hai bisogno di cambiare qualcosa?'));
-    sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Per data, orario, indirizzo o gli altri campi qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.'));
+    sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Per pacchetto, extra, data, orario, indirizzo o qualsiasi altra risposta qui sopra usa il tasto "Modifica" di fianco alla riga. Usa questo spazio solo per note o richieste che non c\'entrano con un campo preciso.'));
     if (campiConRichiestaPendente.informazioni_da_sapere) {
       sezioneRichiesta.appendChild(testo('p', 'istruzioni', 'Hai già una richiesta di questo tipo in attesa di risposta.'));
     } else {
