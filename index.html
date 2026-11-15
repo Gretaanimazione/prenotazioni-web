@@ -2554,6 +2554,73 @@
     });
   }
 
+  // ---- Visita di Babbo Natale: orario e mappa in tempo reale -----------------------------------
+  var leafletPronto = null;
+  function caricaLeaflet() {
+    if (leafletPronto) return leafletPronto;
+    leafletPronto = new Promise(function (resolve, reject) {
+      if (window.L) { resolve(window.L); return; }
+      var css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(css);
+      var sc = document.createElement('script');
+      sc.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      sc.onload = function () { resolve(window.L); };
+      sc.onerror = reject;
+      document.head.appendChild(sc);
+    });
+    return leafletPronto;
+  }
+
+  function aggiornaBoxBabbo(box, token) {
+    chiama('stato_giro_babbo', { token_personale: token }).then(function (st) {
+      if (!document.body.contains(box)) return;
+      if (!st || !st.presente) { box.style.display = 'none'; return; }
+      box.style.display = '';
+      var oraPrevista = new Date(st.orario_previsto).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+      box.innerHTML = '';
+      box.appendChild(testo('h2', 'titolo-form', '🎅 La visita di Babbo Natale'));
+      box.appendChild(testo('p', '', 'Babbo Natale e l\'elfo arriveranno da te alle ' + oraPrevista + ' circa (la visita dura ' + st.durata_minuti + ' minuti).'));
+      if (st.stato_tappa === 'visitata') {
+        box.appendChild(testo('p', '', '✨ La visita è stata completata. Buon Natale!'));
+        return;
+      }
+      if (st.stato_tappa === 'in_arrivo') {
+        var avviso = testo('p', '', '🔔 Stanno arrivando! Nascondi i regali fuori dalla porta: busseranno con la campanella.');
+        avviso.style.fontWeight = '700';
+        box.appendChild(avviso);
+      } else if (st.giro_stato === 'in_corso' && st.tappe_prima > 0) {
+        box.appendChild(testo('p', '', 'Prima di te ci sono ancora ' + st.tappe_prima + (st.tappe_prima === 1 ? ' famiglia.' : ' famiglie.')));
+      }
+      if (st.posizione) {
+        var mappa = el('div', {});
+        mappa.style.cssText = 'height:280px;border-radius:12px;overflow:hidden;margin:10px 0;';
+        box.appendChild(mappa);
+        var quando = new Date(st.posizione.aggiornata_il).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+        box.appendChild(testo('p', 'istruzioni', 'Posizione di Babbo Natale e dell\'elfo, aggiornata alle ' + quando + '.'));
+        caricaLeaflet().then(function (L) {
+          var coord = [Number(st.posizione.latitudine), Number(st.posizione.longitudine)];
+          var m = L.map(mappa, { zoomControl: true }).setView(coord, 14);
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '© OpenStreetMap',
+          }).addTo(m);
+          L.marker(coord, { icon: L.divIcon({ html: '<div style="font-size:34px;line-height:34px;">🎅</div>', className: '', iconSize: [34, 34], iconAnchor: [17, 17] }) }).addTo(m);
+        }).catch(function () { mappa.style.display = 'none'; });
+      } else if (st.oggi && st.giro_stato !== 'in_corso') {
+        box.appendChild(testo('p', 'istruzioni', 'Il giro non è ancora partito: la mappa comparirà appena Babbo Natale si mette in viaggio.'));
+      } else if (!st.oggi) {
+        box.appendChild(testo('p', 'istruzioni', 'Il giorno della visita, da questa pagina, vedrai la mappa in tempo reale con la posizione di Babbo Natale e dell\'elfo.'));
+      }
+      // Il giorno stesso si ricontrolla ogni 20 secondi finche' la visita non e' fatta.
+      if (st.oggi && st.giro_stato !== 'completato') {
+        setTimeout(function () {
+          if (document.body.contains(box)) aggiornaBoxBabbo(box, token);
+        }, 20000);
+      }
+    }).catch(function () { /* silenzioso: la sezione resta com'e' */ });
+  }
+
   function renderVistaPersonale(p, pacchetti) {
     ultimoCaricamentoVista = Date.now();
     app.innerHTML = '';
@@ -2634,6 +2701,16 @@
       boxPosizione.appendChild(bottonePosizione);
       boxPosizione.appendChild(esitoPosizione);
       app.appendChild(boxPosizione);
+    }
+
+    // Visita di Babbo Natale a domicilio: orario assegnato e, il giorno stesso a giro avviato, mappa in tempo
+    // reale con la posizione di Babbo Natale e dell'elfo. Compare solo se la prenotazione e' in un giro con
+    // la scaletta confermata (altrimenti la sezione resta nascosta).
+    if (tokenPersonale) {
+      var boxBabbo = el('div', { class: 'box-busta' });
+      boxBabbo.style.display = 'none';
+      app.appendChild(boxBabbo);
+      aggiornaBoxBabbo(boxBabbo, tokenPersonale);
     }
 
     // Invito di compleanno (compleanni dei bambini con il nome del festeggiato): lo stesso che arriva nella
