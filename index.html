@@ -557,6 +557,7 @@
 
   .riga-dettaglio { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--bordo); text-align: left; }
   .riga-dettaglio .valore { color: var(--testo-muto); text-align: right; flex: 1; }
+  .valore-fisso { margin: 4px 0 0; font-weight: 600; font-size: 16px; }
   .link-modifica { flex: none; background: none; border: none; padding: 0; color: var(--rosa-scura); font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; }
   .editor-inline { padding: 10px 0 16px; border-top: 1px dashed var(--bordo); }
   .editor-inline input[type="text"], .editor-inline input[type="number"], .editor-inline select, .editor-inline textarea {
@@ -1219,6 +1220,12 @@
     return (tr && tr[campo]) || domanda[campo];
   }
   function etichettaOpzione(domanda, opzione) {
+    // Etichette mostrate al posto dei valori salvati (es. "17:00" che si legge "Tra le 17 e le 21"):
+    // elenco parallelo a opzioni, definito nel link.
+    if (domanda && domanda.etichette_opzioni && domanda.opzioni) {
+      var ie = domanda.opzioni.indexOf(opzione);
+      if (ie >= 0 && domanda.etichette_opzioni[ie]) return domanda.etichette_opzioni[ie];
+    }
     var tr = TRAD && TRAD[domanda && domanda.id];
     if (tr && tr.opzioni && domanda.opzioni) {
       var i = domanda.opzioni.indexOf(opzione);
@@ -1889,6 +1896,16 @@
       var stellina = el('span', { class: 'obbligatoria' });
       stellina.textContent = '*';
       label.appendChild(stellina);
+    }
+    // Domanda con risposta decisa dal link (es. la data fissa del 24 dicembre): non si compila, si
+    // legge soltanto, e la risposta parte comunque con l'invio. Con "nascosta" non si vede nemmeno.
+    if (domanda.valore_fisso !== undefined && domanda.valore_fisso !== null) {
+      risposte[domanda.id] = domanda.valore_fisso;
+      if (domanda.nascosta) { wrapper.style.display = 'none'; return wrapper; }
+      label.textContent = trD(domanda, 'testo');
+      wrapper.appendChild(label);
+      wrapper.appendChild(testo('p', 'valore-fisso', domanda.valore_fisso_etichetta || String(domanda.valore_fisso)));
+      return wrapper;
     }
     wrapper.appendChild(label);
 
