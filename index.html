@@ -1597,6 +1597,11 @@
         }
         wrapper.style.display = soddisfatta ? '' : 'none';
         if (!soddisfatta) delete risposte[domanda.id];
+        // Domanda a risposta fissa dipendente da un'altra (es. il prezzo che cambia con la fascia
+        // oraria): la risposta c'e' solo quando la condizione vale.
+        if (soddisfatta && domanda.valore_fisso !== undefined && domanda.valore_fisso !== null) {
+          risposte[domanda.id] = domanda.valore_fisso;
+        }
       });
     }
 
@@ -2991,6 +2996,7 @@
       // "Modifica", senza capire che il campo giusto era la sezione più in basso.
       if (r.chiave_destinazione === 'numero_bambini') return;
       var domandaOriginale = (p.domande_snapshot || []).find(function (d) { return d.id === r.domanda_id; });
+      if (domandaOriginale && domandaOriginale.nascosta) return;
       var contenitoreRiga = el('div', {});
       var riga = el('div', { class: 'riga-dettaglio' });
       riga.appendChild(testo('span', null, domandaOriginale ? trD(domandaOriginale, 'testo') : r.testo_domanda));
