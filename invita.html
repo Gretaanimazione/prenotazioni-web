@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Sei invitato! — Greta Animazione e Allestimenti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Playfair+Display:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sfondo: #fdf6ec; --carta: #ffffff; --testo: #3e2723; --accento: #e0a800; --accento-scuro: #8a6500;
+    --bordo: #dfc9a3; --titolo: "Baloo 2", sans-serif; --verde: #7cb342; --verde-scuro: #33691e; --errore: #c0392b;
+    --fascia: linear-gradient(135deg, #ffd54f, #ff8a65);
+  }
+  body.tema-matrimonio { --sfondo: #faf5ec; --accento: #b8862e; --accento-scuro: #7a5a1c; --bordo: #e2d3b3; --titolo: "Playfair Display", serif; --fascia: linear-gradient(135deg, #f4e4bc, #d9b86a); }
+  body.tema-halloween { --sfondo: #1f1630; --carta: #2b2040; --testo: #fdf1e0; --accento: #ff8f1f; --accento-scuro: #ffb067; --bordo: #5a4580; --fascia: linear-gradient(135deg, #6a1b9a, #ff8f1f); }
+  body.tema-natale { --sfondo: #f7efe4; --accento: #c62828; --accento-scuro: #8e1b1b; --bordo: #d9c2a0; --fascia: linear-gradient(135deg, #c62828, #2e7d32); }
+  body.tema-carnevale { --sfondo: #fff4f8; --accento: #e91e63; --accento-scuro: #ad1457; --bordo: #f3c2d6; --fascia: linear-gradient(135deg, #ff4081, #ffd740, #40c4ff); }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: "Poppins", sans-serif; color: var(--testo); background: var(--sfondo); }
+  main { max-width: 460px; margin: 0 auto; padding: 24px 18px 56px; }
+  .marchio { text-align: center; font-size: 11px; letter-spacing: 2px; font-weight: 600; opacity: 0.7; margin-bottom: 14px; }
+  .invito { position: relative; overflow: hidden; background: var(--carta); border: 2px solid var(--accento); border-radius: 22px; text-align: center; padding: 0 22px 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+  .fascia { height: 92px; margin: 0 -22px 18px; background: var(--fascia); display: flex; align-items: center; justify-content: center; font-size: 40px; letter-spacing: 8px; }
+  .sei { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accento-scuro); }
+  h1 { font-family: var(--titolo); font-weight: 800; font-size: 30px; line-height: 1.15; margin: 8px 0 16px; }
+  .dato { margin: 14px 0; }
+  .dato .grande { font-family: var(--titolo); font-weight: 700; font-size: 22px; text-transform: capitalize; }
+  .dato .piccolo { font-size: 15px; line-height: 1.45; }
+  .separatore { width: 60px; height: 3px; border-radius: 2px; background: var(--accento); margin: 16px auto; }
+  .messaggio { font-style: italic; font-size: 15px; line-height: 1.5; margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(224,168,0,0.12); }
+  a.mappa { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accento-scuro); }
+  .conferma-box { margin-top: 18px; background: var(--carta); border: 1px solid var(--bordo); border-radius: 18px; padding: 18px; }
+  .conferma-box h2 { font-family: var(--titolo); font-size: 20px; margin: 0 0 4px; text-align: center; }
+  .conferma-box p.sotto { margin: 0 0 14px; font-size: 14px; text-align: center; opacity: 0.85; }
+  label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; margin: 10px 0 4px; }
+  input { width: 100%; padding: 13px 14px; border: 1.5px solid var(--bordo); border-radius: 12px; font-family: inherit; font-size: 16px; color: #3e2723; background: #fff; }
+  .doppio { display: flex; gap: 10px; margin-top: 16px; }
+  button.pulsante { flex: 1; padding: 15px 10px; border: none; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+  button.si { background: var(--verde); color: var(--verde-scuro); }
+  button.no { background: transparent; border: 1.5px solid var(--bordo); color: var(--testo); }
+  button[disabled] { opacity: 0.6; cursor: default; }
+  .errore { text-align: center; color: var(--errore); font-size: 14px; margin-top: 12px; }
+  body.tema-halloween .errore { color: #ff8a80; }
+  .grazie { text-align: center; }
+  .grazie .icona { width: 76px; height: 76px; margin: 6px auto 12px; border-radius: 50%; background: var(--verde); color: var(--verde-scuro); display: flex; align-items: center; justify-content: center; font-size: 38px; }
+  .grazie.no .icona { background: var(--bordo); color: var(--testo); }
+  .grazie p { font-size: 16px; line-height: 1.55; margin: 0 0 14px; }
+  .calendario { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .calendario a, .calendario button { display: block; padding: 14px; border-radius: 14px; border: 1.5px solid var(--accento); background: transparent; color: var(--testo); text-align: center; text-decoration: none; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .calendario .primario { background: var(--accento); color: #fff; }
+  .piccolo-link { display: block; margin-top: 14px; text-align: center; font-size: 13px; text-decoration: underline; cursor: pointer; background: none; border: none; color: inherit; font-family: inherit; }
+</style>
+</head>
+<body>
+<main id="app"><p style="text-align:center;">Caricamento…</p></main>
+<script>
+(function () {
+  var API_URL = 'https://mvzxzynapaegqmhkfpqa.supabase.co/functions/v1/invitati-pubblico';
+  var segmenti = location.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  var token = segmenti.length > 1 ? decodeURIComponent(segmenti.slice(1).join('/')) : '';
+  var app = document.getElementById('app');
+  var MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  var GIORNI = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+
+  function el(tag, attrs, figli) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === 'testo') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+    });
+    (figli || []).forEach(function (f) { if (f) n.appendChild(f); });
+    return n;
+  }
+  function chiama(azione, payload) {
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(Object.assign({ azione: azione, token: token }, payload || {}))
+    }).then(function (r) {
+      return r.json().then(function (corpo) {
+        if (!r.ok) throw new Error(corpo.errore || 'Si è verificato un problema, riprova.');
+        return corpo.dati;
+      });
+    });
+  }
+
+  // Tipo di festa -> tema grafico, decorazione e frase d'invito (scritta in automatico, nomi e date sono sempre quelli veri).
+  function tipoFesta(d) {
+    var e = (d.evento || '').toLowerCase();
+    if (/matrimon|nozze/.test(e)) return 'matrimonio';
+    if (/halloween/.test(e)) return 'halloween';
+    if (/natale/.test(e)) return 'natale';
+    if (/carnevale/.test(e)) return 'carnevale';
+    return 'festa';
+  }
+  var DECORO = { matrimonio: '💍 🤍 💐', halloween: '🎃 👻 🦇', natale: '🎄 ⭐ 🎁', carnevale: '🎭 🎉 🎈', festa: '🎈 🎉 🎂' };
+  function titolo(d, tipo) {
+    var nome = d.festeggiato || '';
+    if (tipo === 'matrimonio') return d.sposi ? d.sposi + ' si sposano!' : 'Ci sposiamo!';
+    if (/compleanno/i.test(d.evento || '')) {
+      var t = nome ? 'La festa di compleanno di ' + nome : 'Una festa di compleanno';
+      return t;
+    }
+    if (tipo === 'natale') return 'La festa di Natale';
+    if (tipo === 'halloween') return 'La festa di Halloween';
+    if (tipo === 'carnevale') return 'La festa di Carnevale';
+    return nome ? 'La festa di ' + nome : 'Una festa speciale';
+  }
+  function dataParti(iso) {
+    var p = iso.split('-').map(Number);
+    var d = new Date(p[0], p[1] - 1, p[2]);
+    return { y: p[0], m: p[1], g: p[2], giornoSett: GIORNI[d.getDay()], mese: MESI[p[1] - 1] };
+  }
+  function orarioParti(s) {
+    var m = /(\d{1,2})\s*[:.]\s*(\d{2})/.exec(s || '');
+    return m ? { h: Number(m[1]), min: Number(m[2]) } : null;
+  }
+  function luogoTesto(d) {
+    return [d.nome_location, [d.via, d.cap, d.citta].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+  }
+
+  function pagina(d) {
+    var tipo = tipoFesta(d);
+    document.body.className = 'tema-' + tipo;
+    var dt = dataParti(d.data);
+    var inizio = orarioParti(d.orario_inizio);
+    var luogo = luogoTesto(d);
+    app.innerHTML = '';
+    app.appendChild(el('div', { class: 'marchio', testo: 'GRETA ANIMAZIONE E ALLESTIMENTI' }));
+
+    var invito = el('div', { class: 'invito' }, [
+      el('div', { class: 'fascia', testo: DECORO[tipo] }),
+      el('div', { class: 'sei', testo: 'Sei invitato!' }),
+      el('h1', { testo: titolo(d, tipo) + ((d.eta && /compleanno/i.test(d.evento || '')) ? ' · ' + d.eta + ' anni' : '') }),
+      el('div', { class: 'separatore' }),
+      el('div', { class: 'dato' }, [
+        el('div', { class: 'grande', testo: dt.giornoSett + ' ' + dt.g + ' ' + dt.mese + ' ' + dt.y }),
+        d.orario_inizio ? el('div', { class: 'piccolo', testo: 'dalle ' + d.orario_inizio + (d.orario_fine ? ' alle ' + d.orario_fine : '') }) : null
+      ]),
+      luogo ? el('div', { class: 'dato' }, [
+        el('div', { class: 'piccolo', testo: luogo }),
+        el('a', { class: 'mappa', target: '_blank', rel: 'noopener', href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([d.nome_location, d.via, d.cap, d.citta].filter(Boolean).join(' ')), testo: '📍 Apri la mappa' })
+      ]) : null,
+      d.messaggio ? el('div', { class: 'messaggio', testo: d.messaggio }) : null
+    ]);
+    app.appendChild(invito);
+
+    var box = el('div', { class: 'conferma-box' });
+    app.appendChild(box);
+    modulo(box, d, dt, inizio, luogo, tipo);
+  }
+
+  function modulo(box, d, dt, inizio, luogo, tipo) {
+    box.innerHTML = '';
+    var nome = el('input', { type: 'text', autocomplete: 'name', maxlength: '100', placeholder: 'Nome e cognome' });
+    var tel = el('input', { type: 'tel', autocomplete: 'tel', maxlength: '40', placeholder: 'Il tuo numero di cellulare' });
+    var pers = el('input', { type: 'number', min: '1', max: '20', value: '1', inputmode: 'numeric' });
+    var errore = el('div', { class: 'errore' });
+    var si = el('button', { type: 'button', class: 'pulsante si', testo: 'Ci sarò! 🎉' });
+    var no = el('button', { type: 'button', class: 'pulsante no', testo: 'Non posso' });
+
+    function invia(stato) {
+      errore.textContent = '';
+      if (!nome.value.trim()) { errore.textContent = 'Scrivi il tuo nome.'; return; }
+      if (stato === 'confermato' && tel.value.replace(/\D/g, '').length < 8) { errore.textContent = 'Scrivi il tuo numero di cellulare.'; return; }
+      si.disabled = no.disabled = true;
+      chiama('rispondi', { nome: nome.value, telefono: tel.value, stato: stato, persone: parseInt(pers.value, 10) || 1 })
+        .then(function () { grazie(box, d, dt, inizio, luogo, stato, nome.value.trim()); })
+        .catch(function (e) { errore.textContent = e.message; si.disabled = no.disabled = false; });
+    }
+    si.addEventListener('click', function () { invia('confermato'); });
+    no.addEventListener('click', function () { invia('rifiutato'); });
+
+    box.appendChild(el('h2', { testo: 'Conferma la tua presenza' }));
+    box.appendChild(el('p', { class: 'sotto', testo: 'Lascia il tuo nome e il tuo numero: chi ti ha invitato saprà che ci sei.' }));
+    box.appendChild(el('label', { testo: 'Nome' })); box.appendChild(nome);
+    box.appendChild(el('label', { testo: 'Cellulare' })); box.appendChild(tel);
+    box.appendChild(el('label', { testo: 'Quante persone (compreso te)?' })); box.appendChild(pers);
+    box.appendChild(el('div', { class: 'doppio' }, [si, no]));
+    box.appendChild(errore);
+  }
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function stampaData(dt, h, m) { return dt.y + pad(dt.m) + pad(dt.g) + 'T' + pad(h) + pad(m) + '00'; }
+
+  function grazie(box, d, dt, inizio, luogo, stato, nome) {
+    box.innerHTML = '';
+    if (stato === 'rifiutato') {
+      box.appendChild(el('div', { class: 'grazie no' }, [
+        el('div', { class: 'icona', testo: '💌' }),
+        el('p', { testo: 'Grazie ' + nome + ', ti ringraziamo di averci avvisato. Peccato, ci mancherai!' })
+      ]));
+      var cambia = el('button', { type: 'button', class: 'piccolo-link', testo: 'Ho cambiato idea: ci sarò' });
+      cambia.addEventListener('click', function () { modulo(box, d, dt, inizio, luogo, 'festa'); });
+      box.appendChild(cambia);
+      return;
+    }
+    box.appendChild(el('div', { class: 'grazie' }, [
+      el('div', { class: 'icona', testo: '✓' }),
+      el('p', { testo: 'Perfetto ' + nome + ', ti aspettiamo! La tua presenza è confermata.' })
+    ]));
+    var titoloEv = titolo(d, tipoFesta(d));
+    var h = inizio ? inizio.h : 10, m = inizio ? inizio.min : 0;
+    var fine = d.orario_fine ? orarioParti(d.orario_fine) : null;
+    var hf = fine ? fine.h : h + 3, mf = fine ? fine.min : m;
+    var inizioStr = stampaData(dt, h, m), fineStr = stampaData(dt, Math.min(hf, 23), mf);
+    var urlGoogle = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(titoloEv) +
+      '&dates=' + inizioStr + '/' + fineStr + (luogo ? '&location=' + encodeURIComponent(luogo) : '') +
+      '&details=' + encodeURIComponent('Invito di Greta Animazione e Allestimenti');
+    var bGoogle = el('a', { class: 'primario', href: urlGoogle, target: '_blank', rel: 'noopener', testo: '📅 Aggiungi al calendario (Google)' });
+    var bIcs = el('button', { type: 'button', testo: '🍎 Aggiungi al calendario (iPhone e altri)' });
+    bIcs.addEventListener('click', function () {
+      var righe = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Greta Animazione e Allestimenti//Invito//IT', 'BEGIN:VEVENT',
+        'UID:' + token + '@gretaanimazione.com', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
+        'DTSTART:' + inizioStr, 'DTEND:' + fineStr, 'SUMMARY:' + titoloEv.replace(/[,;]/g, ' '),
+        luogo ? 'LOCATION:' + luogo.replace(/[,;]/g, ' ') : '', 'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:Domani: ' + titoloEv.replace(/[,;]/g, ' '), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR']
+        .filter(Boolean).join('\r\n');
+      var blob = new Blob([righe], { type: 'text/calendar;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = 'invito.ics'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    });
+    box.appendChild(el('div', { class: 'calendario' }, [bGoogle, bIcs]));
+  }
+
+  if (!/^[a-f0-9]{32}$/.test(token)) {
+    app.innerHTML = '';
+    app.appendChild(el('p', { class: 'errore', testo: 'Questo invito non è valido.' }));
+    return;
+  }
+  chiama('leggi').then(pagina).catch(function (e) {
+    app.innerHTML = '';
+    app.appendChild(el('p', { class: 'errore', testo: e.message }));
+  });
+})();
+</script>
+</body>
+</html>
