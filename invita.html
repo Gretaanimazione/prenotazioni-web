@@ -24,6 +24,7 @@
   .marchio { text-align: center; font-size: 11px; letter-spacing: 2px; font-weight: 600; opacity: 0.7; margin-bottom: 14px; }
   .invito { position: relative; overflow: hidden; background: var(--carta); border: 2px solid var(--accento); border-radius: 22px; text-align: center; padding: 0 22px 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
   .fascia { height: 92px; margin: 0 -22px 18px; background: var(--fascia); display: flex; align-items: center; justify-content: center; font-size: 40px; letter-spacing: 8px; }
+  .locandina { display: block; width: calc(100% + 44px); max-width: none; margin: 0 -22px 18px; max-height: 560px; object-fit: contain; background: rgba(0,0,0,0.04); }
   .sei { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accento-scuro); }
   h1 { font-family: var(--titolo); font-weight: 800; font-size: 30px; line-height: 1.15; margin: 8px 0 16px; }
   .dato { margin: 14px 0; }
@@ -131,7 +132,7 @@
     app.appendChild(el('div', { class: 'marchio', testo: 'GRETA ANIMAZIONE E ALLESTIMENTI' }));
 
     var invito = el('div', { class: 'invito' }, [
-      el('div', { class: 'fascia', testo: DECORO[tipo] }),
+      d.locandina_url ? el('img', { class: 'locandina', src: d.locandina_url, alt: 'Locandina dell’invito' }) : el('div', { class: 'fascia', testo: DECORO[tipo] }),
       el('div', { class: 'sei', testo: 'Sei invitato!' }),
       el('h1', { testo: titolo(d, tipo) + ((d.eta && /compleanno/i.test(d.evento || '')) ? ' · ' + d.eta + ' anni' : '') }),
       el('div', { class: 'separatore' }),
