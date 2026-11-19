@@ -24,6 +24,7 @@
   .marchio { text-align: center; font-size: 11px; letter-spacing: 2px; font-weight: 600; opacity: 0.7; margin-bottom: 14px; }
   .invito { position: relative; overflow: hidden; background: var(--carta); border: 2px solid var(--accento); border-radius: 22px; text-align: center; padding: 0 22px 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
   .fascia { height: 92px; margin: 0 -22px 18px; background: var(--fascia); display: flex; align-items: center; justify-content: center; font-size: 40px; letter-spacing: 8px; }
+  .invito .locandina:first-child { margin-top: 0; }
   .locandina { display: block; width: calc(100% + 44px); max-width: none; margin: 0 -22px 18px; max-height: 560px; object-fit: contain; background: rgba(0,0,0,0.04); }
   .sei { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accento-scuro); }
   h1 { font-family: var(--titolo); font-weight: 800; font-size: 30px; line-height: 1.15; margin: 8px 0 16px; }
@@ -131,7 +132,17 @@
     app.innerHTML = '';
     app.appendChild(el('div', { class: 'marchio', testo: 'GRETA ANIMAZIONE E ALLESTIMENTI' }));
 
-    var invito = el('div', { class: 'invito' }, [
+    // Invito a tema (lo stesso che si genera in Greta Staff): l'immagine contiene gia' nome, data, ora e luogo.
+    var soloImmagine = !!d.invito_immagine_url && !d.locandina_url;
+    var mappa = luogo ? el('a', { class: 'mappa', target: '_blank', rel: 'noopener', href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([d.nome_location, d.via, d.cap, d.citta].filter(Boolean).join(' ')), testo: '📍 Apri la mappa' }) : null;
+    var invito;
+    if (soloImmagine) {
+      invito = el('div', { class: 'invito' }, [
+        el('img', { class: 'locandina', src: d.invito_immagine_url, alt: 'Il tuo invito' }),
+        mappa ? el('div', { class: 'dato' }, [mappa]) : null,
+        d.messaggio ? el('div', { class: 'messaggio', testo: d.messaggio }) : null
+      ]);
+    } else invito = el('div', { class: 'invito' }, [
       d.locandina_url ? el('img', { class: 'locandina', src: d.locandina_url, alt: 'Locandina dell’invito' }) : el('div', { class: 'fascia', testo: DECORO[tipo] }),
       el('div', { class: 'sei', testo: 'Sei invitato!' }),
       el('h1', { testo: titolo(d, tipo) + ((d.eta && /compleanno/i.test(d.evento || '')) ? ' · ' + d.eta + ' anni' : '') }),
@@ -142,7 +153,7 @@
       ]),
       luogo ? el('div', { class: 'dato' }, [
         el('div', { class: 'piccolo', testo: luogo }),
-        el('a', { class: 'mappa', target: '_blank', rel: 'noopener', href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([d.nome_location, d.via, d.cap, d.citta].filter(Boolean).join(' ')), testo: '📍 Apri la mappa' })
+        mappa
       ]) : null,
       d.messaggio ? el('div', { class: 'messaggio', testo: d.messaggio }) : null
     ]);
