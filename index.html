@@ -217,6 +217,32 @@
   body.tema-carnevale .decorazione-carnevale { display: block; }
   body.tema-carnevale .titolo-form::before { content: "🎭 "; }
 
+  /* 🎆 Capodanno: blu notte e oro su fondo champagne (catalogo Capodanno) */
+  body.tema-capodanno {
+    --rosa-chiara: #f3ead6;
+    --rosa: #1c2a4e;
+    --rosa-scura: #0f1a33;
+    --oro: #c9993a;
+    --menta: #8a6a1e;
+    --crema: #f8f1e3;
+    --superficie: #ffffff;
+    --testo: #1a2340;
+    --testo-muto: #6b6a78;
+    --bordo: #e6dcc4;
+    --bordo-tratteggiato: #c9993a;
+    --danger: #b3394a;
+    --bagliore-1: rgba(201, 153, 58, 0.16);
+    --bagliore-2: rgba(28, 42, 78, 0.10);
+    --globo1-a: #f3dc9c; --globo1-b: #c9993a; /* oro */
+    --globo2-a: #4a5a86; --globo2-b: #0f1a33; /* blu notte */
+    --globo3-a: #fffaf0; --globo3-b: #e8dcc0; /* champagne */
+    --globo4-a: #e8c46a; --globo4-b: #a8761c; /* oro scuro */
+    --globo5-a: #8a96b8; --globo5-b: #2a3a66; /* blu */
+  }
+  body.tema-capodanno .decorazione-palloncini { display: none; }
+  body.tema-capodanno .decorazione-capodanno { display: block; }
+  body.tema-capodanno .titolo-form::before { content: "🎆 "; }
+
   /* Catalogo aperto direttamente in pagina (link con le pagine del catalogo come immagini) */
   .catalogo-riga { display: flex; gap: 10px; margin-top: 10px; }
   .catalogo-riga .pulsante { flex: 1; margin-top: 0; }
@@ -244,6 +270,7 @@
   .decorazione-natale { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-halloween { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   .decorazione-carnevale { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
+  .decorazione-capodanno { display: none; width: 100%; height: auto; pointer-events: none; user-select: none; }
   body.tema-matrimonio_bimbi .decorazione-palloncini { display: none; }
   body.tema-matrimonio_bimbi .decorazione-fiori { display: block; }
   /* Titoli in oro chiaro: l'oro scuro di prima si leggeva male sullo sfondo prugna. */
@@ -934,6 +961,33 @@
           <path d="M500 170 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" opacity="0.7" />
         </g>
       </svg>
+      <svg class="decorazione-capodanno" viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+      <radialGradient id="gCapOro" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#f6e2a4"/><stop offset="1" stop-color="#b98a2e"/></radialGradient>
+      <radialGradient id="gCapNotte" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#4a5a86"/><stop offset="1" stop-color="#0f1a33"/></radialGradient>
+      <radialGradient id="gCapChamp" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#fffdf6"/><stop offset="1" stop-color="#e3d4b0"/></radialGradient>
+      </defs>
+      <g stroke="#c9993a" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.95"><path d="M876.0 92.0 L918.0 92.0 M874.8 98.1 L913.6 114.2 M871.3 103.3 L901.0 133.0 M866.1 106.8 L882.2 145.6 M860.0 108.0 L860.0 150.0 M853.9 106.8 L837.8 145.6 M848.7 103.3 L819.0 133.0 M845.2 98.1 L806.4 114.2 M844.0 92.0 L802.0 92.0 M845.2 85.9 L806.4 69.8 M848.7 80.7 L819.0 51.0 M853.9 77.2 L837.8 38.4 M860.0 76.0 L860.0 34.0 M866.1 77.2 L882.2 38.4 M871.3 80.7 L901.0 51.0 M874.8 85.9 L913.6 69.8"/></g><g fill="#c9993a" opacity="0.95"><circle cx="927.0" cy="92.0" r="2.4"/><circle cx="921.9" cy="117.6" r="2.4"/><circle cx="907.4" cy="139.4" r="2.4"/><circle cx="885.6" cy="153.9" r="2.4"/><circle cx="860.0" cy="159.0" r="2.4"/><circle cx="834.4" cy="153.9" r="2.4"/><circle cx="812.6" cy="139.4" r="2.4"/><circle cx="798.1" cy="117.6" r="2.4"/><circle cx="793.0" cy="92.0" r="2.4"/><circle cx="798.1" cy="66.4" r="2.4"/><circle cx="812.6" cy="44.6" r="2.4"/><circle cx="834.4" cy="30.1" r="2.4"/><circle cx="860.0" cy="25.0" r="2.4"/><circle cx="885.6" cy="30.1" r="2.4"/><circle cx="907.4" cy="44.6" r="2.4"/><circle cx="921.9" cy="66.4" r="2.4"/></g>
+      <g stroke="#e8c46a" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.9"><path d="M865.9 93.0 L871.8 94.1 M863.4 96.9 L866.9 101.8 M859.0 97.9 L857.9 103.8 M855.1 95.4 L850.2 98.9 M854.1 91.0 L848.2 89.9 M856.6 87.1 L853.1 82.2 M861.0 86.1 L862.1 80.2 M864.9 88.6 L869.8 85.1"/></g><g fill="#e8c46a" opacity="0.9"><circle cx="880.7" cy="95.6" r="2.4"/><circle cx="872.0" cy="109.2" r="2.4"/><circle cx="856.4" cy="112.7" r="2.4"/><circle cx="842.8" cy="104.0" r="2.4"/><circle cx="839.3" cy="88.4" r="2.4"/><circle cx="848.0" cy="74.8" r="2.4"/><circle cx="863.6" cy="71.3" r="2.4"/><circle cx="877.2" cy="80.0" r="2.4"/></g>
+      <g stroke="#1c2a4e" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.75"><path d="M709.9 57.4 L735.6 61.0 M707.9 62.2 L728.4 78.2 M703.7 65.3 L713.5 89.4 M698.6 65.9 L695.0 91.6 M693.8 63.9 L677.8 84.4 M690.7 59.7 L666.6 69.5 M690.1 54.6 L664.4 51.0 M692.1 49.8 L671.6 33.8 M696.3 46.7 L686.5 22.6 M701.4 46.1 L705.0 20.4 M706.2 48.1 L722.2 27.6 M709.3 52.3 L733.4 42.5"/></g><g fill="#1c2a4e" opacity="0.75"><circle cx="744.6" cy="62.3" r="2.4"/><circle cx="735.5" cy="83.7" r="2.4"/><circle cx="716.9" cy="97.7" r="2.4"/><circle cx="693.7" cy="100.6" r="2.4"/><circle cx="672.3" cy="91.5" r="2.4"/><circle cx="658.3" cy="72.9" r="2.4"/><circle cx="655.4" cy="49.7" r="2.4"/><circle cx="664.5" cy="28.3" r="2.4"/><circle cx="683.1" cy="14.3" r="2.4"/><circle cx="706.3" cy="11.4" r="2.4"/><circle cx="727.7" cy="20.5" r="2.4"/><circle cx="741.7" cy="39.1" r="2.4"/></g>
+      <g stroke="#c9993a" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"><path d="M958.0 170.0 L978.0 170.0 M956.5 174.7 L972.7 186.5 M952.5 177.6 L958.7 196.6 M947.5 177.6 L941.3 196.6 M943.5 174.7 L927.3 186.5 M942.0 170.0 L922.0 170.0 M943.5 165.3 L927.3 153.5 M947.5 162.4 L941.3 143.4 M952.5 162.4 L958.7 143.4 M956.5 165.3 L972.7 153.5"/></g><g fill="#c9993a" opacity="0.8"><circle cx="987.0" cy="170.0" r="2.4"/><circle cx="979.9" cy="191.7" r="2.4"/><circle cx="961.4" cy="205.2" r="2.4"/><circle cx="938.6" cy="205.2" r="2.4"/><circle cx="920.1" cy="191.7" r="2.4"/><circle cx="913.0" cy="170.0" r="2.4"/><circle cx="920.1" cy="148.3" r="2.4"/><circle cx="938.6" cy="134.8" r="2.4"/><circle cx="961.4" cy="134.8" r="2.4"/><circle cx="979.9" cy="148.3" r="2.4"/></g>
+      <g stroke="#c9993a" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6"><path d="M567.8 151.7 L585.4 155.4 M565.4 155.9 L577.4 169.3 M560.8 158.0 L562.7 175.9 M556.0 156.9 L547.0 172.5 M552.7 153.3 L536.2 160.6 M552.2 148.3 L534.6 144.6 M554.6 144.1 L542.6 130.7 M559.2 142.0 L557.3 124.1 M564.0 143.1 L573.0 127.5 M567.3 146.7 L583.8 139.4"/></g><g fill="#c9993a" opacity="0.6"><circle cx="594.2" cy="157.3" r="2.4"/><circle cx="583.4" cy="176.0" r="2.4"/><circle cx="563.7" cy="184.8" r="2.4"/><circle cx="542.5" cy="180.3" r="2.4"/><circle cx="528.0" cy="164.2" r="2.4"/><circle cx="525.8" cy="142.7" r="2.4"/><circle cx="536.6" cy="124.0" r="2.4"/><circle cx="556.3" cy="115.2" r="2.4"/><circle cx="577.5" cy="119.7" r="2.4"/><circle cx="592.0" cy="135.8" r="2.4"/></g>
+      <ellipse cx="70" cy="76" rx="38" ry="48" fill="url(#gCapOro)"/><ellipse cx="55" cy="57" rx="8" ry="16" fill="#fff" opacity="0.28"/><path d="M70 123 l-5 9 h10 z" fill="#8a6a1e" opacity="0.8"/><path d="M70 132 Q60 169 60 219" fill="none" stroke="#8a6a1e" stroke-width="1.4" opacity="0.7"/>
+      <ellipse cx="138" cy="64" rx="34" ry="44" fill="url(#gCapNotte)"/><ellipse cx="125" cy="47" rx="7" ry="14" fill="#fff" opacity="0.28"/><path d="M138 107 l-5 9 h10 z" fill="#8a6a1e" opacity="0.8"/><path d="M138 116 Q128 153 150 203" fill="none" stroke="#8a6a1e" stroke-width="1.4" opacity="0.7"/>
+      <ellipse cx="104" cy="118" rx="32" ry="41" fill="url(#gCapChamp)"/><ellipse cx="91" cy="102" rx="7" ry="13" fill="#fff" opacity="0.28"/><path d="M104 158 l-5 9 h10 z" fill="#8a6a1e" opacity="0.8"/><path d="M104 167 Q94 204 100 254" fill="none" stroke="#8a6a1e" stroke-width="1.4" opacity="0.7"/>
+      <path d="M250.0 30.0 L252.8 37.2 L260.0 40.0 L252.8 42.8 L250.0 50.0 L247.2 42.8 L240.0 40.0 L247.2 37.2 Z" fill="#c9993a" opacity="0.9"/>
+      <path d="M330.0 113.0 L332.0 118.0 L337.0 120.0 L332.0 122.0 L330.0 127.0 L328.0 122.0 L323.0 120.0 L328.0 118.0 Z" fill="#c9993a" opacity="0.8"/>
+      <path d="M410.0 46.0 L411.7 50.3 L416.0 52.0 L411.7 53.7 L410.0 58.0 L408.3 53.7 L404.0 52.0 L408.3 50.3 Z" fill="#c9993a" opacity="0.7"/>
+      <path d="M470.0 141.0 L472.5 147.5 L479.0 150.0 L472.5 152.5 L470.0 159.0 L467.5 152.5 L461.0 150.0 L467.5 147.5 Z" fill="#c9993a" opacity="0.85"/>
+      <path d="M640.0 112.0 L642.2 117.8 L648.0 120.0 L642.2 122.2 L640.0 128.0 L637.8 122.2 L632.0 120.0 L637.8 117.8 Z" fill="#c9993a" opacity="0.8"/>
+      <path d="M760.0 15.0 L762.0 20.0 L767.0 22.0 L762.0 24.0 L760.0 29.0 L758.0 24.0 L753.0 22.0 L758.0 20.0 Z" fill="#1c2a4e" opacity="0.75"/>
+      <path d="M610.0 22.0 L611.7 26.3 L616.0 28.0 L611.7 29.7 L610.0 34.0 L608.3 29.7 L604.0 28.0 L608.3 26.3 Z" fill="#c9993a" opacity="0.7"/>
+      <path d="M985.0 32.0 L987.2 37.8 L993.0 40.0 L987.2 42.2 L985.0 48.0 L982.8 42.2 L977.0 40.0 L982.8 37.8 Z" fill="#c9993a" opacity="0.85"/>
+      <path d="M215.0 144.0 L216.7 148.3 L221.0 150.0 L216.7 151.7 L215.0 156.0 L213.3 151.7 L209.0 150.0 L213.3 148.3 Z" fill="#1c2a4e" opacity="0.7"/>
+      <path d="M520.0 83.0 L521.4 86.6 L525.0 88.0 L521.4 89.4 L520.0 93.0 L518.6 89.4 L515.0 88.0 L518.6 86.6 Z" fill="#c9993a" opacity="0.6"/>
+      <g fill="#c9993a" opacity="0.85"><circle cx="300" cy="78" r="2.3"/><circle cx="380" cy="150" r="2"/><circle cx="560" cy="60" r="2.2"/><circle cx="700" cy="150" r="2"/><circle cx="930" cy="110" r="2.2"/><circle cx="440" cy="100" r="1.8"/></g>
+      </svg>
+
       <div class="logo-riquadro">
         <div class="logo-script">Greta<span class="cuore"> ♡</span></div>
         <span class="logo-sottotitolo">EVENTS</span>
