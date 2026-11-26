@@ -243,6 +243,38 @@
   body.tema-capodanno .decorazione-capodanno { display: block; }
   body.tema-capodanno .titolo-form::before { content: "🎆 "; }
 
+  /* 🌿 Ristoro il Fauno (collaborazione): verde e salvia del loro sito, logo in cima a ogni pagina */
+  body.tema-fauno {
+    --rosa-chiara: #e8efe6;
+    --rosa: #244d2e;
+    --rosa-scura: #183620;
+    --oro: #b08d57;
+    --menta: #6f8f6a;
+    --crema: #f6f7f2;
+    --superficie: #ffffff;
+    --testo: #1f2b21;
+    --testo-muto: #667368;
+    --bordo: #dbe4d7;
+    --bordo-tratteggiato: #b0c7ab;
+    --danger: #9c2f36;
+    --bagliore-1: rgba(36, 77, 46, 0.10);
+    --bagliore-2: rgba(176, 199, 171, 0.28);
+  }
+  body.tema-fauno .decorazione-palloncini, body.tema-fauno .logo-riquadro { display: none; }
+  body.tema-fauno .intestazione { padding: 0 0 6px; overflow: visible; }
+  body.tema-fauno .decorazione-fauno { display: block; }
+  body.tema-fauno .titolo-form.intestazione-scelta { color: var(--rosa); }
+  body.tema-fauno .titolo-form { font-family: "Playfair Display", serif; font-size: 22px; line-height: 1.35; color: var(--rosa); }
+  body.tema-fauno .titolo-form.intestazione-scelta { font-size: 20px; }
+  .decorazione-fauno { display: none; background: #244d2e; padding: 22px 20px 20px; border-radius: 0 0 26px 26px; }
+  .decorazione-fauno img { display: block; width: 170px; max-width: 55%; height: auto; margin: 0 auto; }
+  .decorazione-fauno .filo { width: 64px; height: 2px; background: #b0c7ab; margin: 16px auto 12px; }
+  .decorazione-fauno .con { color: #b0c7ab; font-family: "Playfair Display", serif; font-style: italic; font-size: 14px; }
+  .decorazione-fauno .greta { color: #ffffff; font-family: "Playfair Display", serif; font-weight: 700; font-size: 19px; line-height: 1.35; }
+  .scheda-catalogo { border: 1px solid var(--bordo); background: var(--superficie); border-radius: 16px; padding: 16px; margin-top: 14px; text-align: center; }
+  .scheda-catalogo h2 { margin: 0; font-family: "Playfair Display", serif; font-size: 19px; color: var(--rosa); }
+  .scheda-catalogo p { margin: 4px 0 0; color: var(--testo-muto); font-size: 13px; }
+
   /* Catalogo aperto direttamente in pagina (link con le pagine del catalogo come immagini) */
   .catalogo-riga { display: flex; gap: 10px; margin-top: 10px; }
   .catalogo-riga .pulsante { flex: 1; margin-top: 0; }
@@ -987,6 +1019,13 @@
       <path d="M520.0 83.0 L521.4 86.6 L525.0 88.0 L521.4 89.4 L520.0 93.0 L518.6 89.4 L515.0 88.0 L518.6 86.6 Z" fill="#c9993a" opacity="0.6"/>
       <g fill="#c9993a" opacity="0.85"><circle cx="300" cy="78" r="2.3"/><circle cx="380" cy="150" r="2"/><circle cx="560" cy="60" r="2.2"/><circle cx="700" cy="150" r="2"/><circle cx="930" cy="110" r="2.2"/><circle cx="440" cy="100" r="1.8"/></g>
       </svg>
+
+      <div class="decorazione-fauno">
+        <img src="/icons/logo-fauno.png" alt="Ristoro il Fauno" width="170" height="170" />
+        <div class="filo"></div>
+        <div class="con">in collaborazione con</div>
+        <div class="greta">Greta Animazione &amp; Allestimenti</div>
+      </div>
 
       <div class="logo-riquadro">
         <div class="logo-script">Greta<span class="cuore"> ♡</span></div>
@@ -3682,6 +3721,15 @@
         scarica.textContent = link['catalogo_' + tipo + '_pdf_testo_bottone'] || 'Scarica PDF';
         scarica.onclick = function () { window.location.href = pdfUrl; };
         riga.appendChild(scarica);
+      }
+      if (link.tema === 'fauno') {
+        var scheda = el('div', { class: 'scheda-catalogo' });
+        scheda.appendChild(testo('h2', null, 'Intrattenimento ' + tipo));
+        scheda.appendChild(testo('p', null, tipo === 'bimbi' ? 'Animazione a ore, extra e baby sitting' : 'Photobooth, video 360, luna park ed effetti scenici'));
+        scheda.appendChild(riga);
+        scheda.appendChild(viewer);
+        app.appendChild(scheda);
+        return true;
       }
       app.appendChild(riga);
       app.appendChild(viewer);
