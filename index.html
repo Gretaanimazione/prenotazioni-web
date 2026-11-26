@@ -275,6 +275,9 @@
   .scheda-catalogo h2 { margin: 0; font-family: "Playfair Display", serif; font-size: 19px; color: var(--rosa); }
   .scheda-catalogo p { margin: 4px 0 0; color: var(--testo-muto); font-size: 13px; }
 
+  .torna-indietro { align-self: flex-start; margin: 12px 20px 0; padding: 8px 14px; border: 1px solid var(--bordo); border-radius: 999px; background: var(--superficie); color: var(--testo); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .torna-indietro[hidden] { display: none; }
+
   /* Catalogo aperto direttamente in pagina (link con le pagine del catalogo come immagini) */
   .catalogo-riga { display: flex; gap: 10px; margin-top: 10px; }
   .catalogo-riga .pulsante { flex: 1; margin-top: 0; }
@@ -1033,6 +1036,7 @@
         <div class="divisore-oro"><span>✦</span></div>
       </div>
     </header>
+    <button type="button" id="torna-indietro" class="torna-indietro" hidden></button>
     <main id="app" class="contenuto">
       <p class="caricamento">Caricamento…</p>
     </main>
@@ -1117,6 +1121,7 @@
     'Caricamento delle tue prenotazioni…': 'Loading your bookings…',
     'Caricamento in corso…': 'Uploading…',
     'Fai una nuova prenotazione': 'Make a new booking',
+    '← Torna indietro': '← Back',
     'Oppure, se hai già prenotato:': 'Or, if you have already booked:',
     'Cerca una prenotazione già effettuata per modificarla': 'Find an existing booking to change it',
     'Apri PDF adulti': "Open adults' PDF",
@@ -2550,6 +2555,7 @@
   var ultimoCaricamentoVista = 0;
 
   function avviaVistaPersonale() {
+    mostraIndietro(false);
     ultimoCaricamentoVista = 0;
     app.innerHTML = '';
     app.appendChild(testo('p', 'caricamento', 'Caricamento della tua prenotazione…'));
@@ -3652,6 +3658,7 @@
   // Halloween). In più, voleva una scelta esplicita e ben visibile tra le due strade possibili,
   // non un form di ricerca con la "nuova prenotazione" relegata a un bottone in fondo.
   function avviaSceltaIniziale() {
+    mostraIndietro(false);
     app.innerHTML = '';
     app.appendChild(testo('p', 'caricamento', 'Caricamento…'));
     chiama('carica_link', { url_token: urlToken }).then(function (link) {
@@ -3765,7 +3772,7 @@
     var bottoneNuova = el('button', { class: 'pulsante-titolo' });
     if (cataloghiPrima) bottoneNuova.style.marginTop = '22px';
     bottoneNuova.textContent = (link && link.bottone_primario_testo) || 'Fai una nuova prenotazione';
-    bottoneNuova.onclick = function () { avviaModulo(); };
+    bottoneNuova.onclick = function () { apriVista('modulo'); };
     app.appendChild(bottoneNuova);
 
     // Richiesto da Greta per Jiyu Wedding: il catalogo della prima scelta (es. animazione bimbi)
@@ -3788,7 +3795,7 @@
       bottoneSecondario.onclick = function () {
         // ?nuova=1: apre direttamente il modulo del secondo link, senza ripassare dalla sua schermata
         // iniziale (stessi pulsanti e cataloghi già visti qui).
-        window.location.href = '/' + link.bottone_secondario_url_token + '?nuova=1';
+        window.location.href = '/' + link.bottone_secondario_url_token + '?nuova=1&indietro=1';
       };
       app.appendChild(bottoneSecondario);
     }
@@ -3806,7 +3813,7 @@
 
     var bottoneCerca = el('button', { class: 'pulsante secondario' });
     bottoneCerca.textContent = 'Cerca una prenotazione già effettuata per modificarla';
-    bottoneCerca.onclick = function () { avviaRecuperoPrenotazione(); };
+    bottoneCerca.onclick = function () { apriVista('recupero'); };
     app.appendChild(bottoneCerca);
   }
 
@@ -3995,6 +4002,32 @@
     if (e.persisted) ricaricaSeVistaPersonaleVecchia(true);
   });
 
+  // Freccia indietro (richiesta di Greta, link Ristoro il Fauno): aperto un modulo dalla schermata iniziale,
+  // "indietro" (quella del browser o il pulsante in pagina) riporta ai cataloghi e agli altri pulsanti, invece
+  // di uscire dal link.
+  var bottoneIndietro = document.getElementById('torna-indietro');
+  function mostraIndietro(visibile) {
+    bottoneIndietro.textContent = t('← Torna indietro');
+    bottoneIndietro.hidden = !visibile;
+  }
+  bottoneIndietro.onclick = function () { history.back(); };
+  function apriVista(quale) {
+    history.pushState({ vista: quale }, '');
+    mostraVista(quale);
+  }
+  function mostraVista(quale) {
+    if (quale === 'recupero') avviaRecuperoPrenotazione(); else avviaModulo();
+    mostraIndietro(true);
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('popstate', function () {
+    if (!urlToken || tokenPersonaleDaUrl) return;
+    if (history.state && history.state.vista) { mostraVista(history.state.vista); return; }
+    if (params.get('nuova') === '1') return; // arrivo da un altro link: indietro torna a quella pagina
+    avviaSceltaIniziale();
+    window.scrollTo(0, 0);
+  });
+
   function avvia() {
   if (tokenPersonaleDaUrl && params.get('invito') === '1') {
     avviaPaginaInvito();
@@ -4007,6 +4040,7 @@
     // Arrivo dal pulsante "nuova prenotazione" di un altro link (es. adulti dal link bimbi): si parte
     // subito dal modulo.
     avviaModulo();
+    if (params.get('indietro') === '1' && history.length > 1) mostraIndietro(true);
   } else if (urlToken) {
     var tokenSalvati = leggiTokenPersonali();
     if (tokenSalvati.length === 1) {
